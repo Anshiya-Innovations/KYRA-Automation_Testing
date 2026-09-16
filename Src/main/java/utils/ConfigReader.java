@@ -45,7 +45,19 @@ public class ConfigReader {
     }
 
     public static double getBrowserZoom() {
-        return Double.parseDouble(getProperty("browser.zoom", "0.85"));
+        return Double.parseDouble(getProperty("browser.zoom", "1.0"));
+    }
+
+    public static double getDeviceScaleFactor() {
+        return Double.parseDouble(getProperty("browser.deviceScaleFactor", "1.0"));
+    }
+
+    public static int getViewportWidth() {
+        return Integer.parseInt(getProperty("browser.viewport.width", "1920"));
+    }
+
+    public static int getViewportHeight() {
+        return Integer.parseInt(getProperty("browser.viewport.height", "1080"));
     }
 
     public static int getDefaultTimeout() {

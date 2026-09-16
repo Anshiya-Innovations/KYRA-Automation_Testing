@@ -38,6 +38,14 @@ public abstract class BaseTest {
         if (ConfigReader.isMaximized()) {
             args.add("--start-maximized");
         }
+        // Enforce 1:1 device scale factor to prevent high-DPI Windows display scaling from over-zooming
+        double scaleFactor = ConfigReader.getDeviceScaleFactor();
+        if (scaleFactor > 0) {
+            args.add("--force-device-scale-factor=" + scaleFactor);
+        }
+        args.add("--window-size=" + ConfigReader.getViewportWidth() + "," + ConfigReader.getViewportHeight());
+        args.add("--disable-blink-features=AutomationControlled");
+
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
                         .setHeadless(ConfigReader.isHeadless())
@@ -62,31 +70,14 @@ public abstract class BaseTest {
     public void setUp() {
         Browser.NewContextOptions options = new Browser.NewContextOptions();
         if (ConfigReader.isMaximized()) {
-            // Null viewport allows Chromium to use full native window dimensions without forced constraints
+            // Null viewport allows Chromium to use full native maximized window dimensions
             options.setViewportSize((ViewportSize) null);
         } else {
-            options.setViewportSize(1280, 800);
+            options.setViewportSize(ConfigReader.getViewportWidth(), ConfigReader.getViewportHeight());
         }
 
         context = browser.newContext(options);
         page = context.newPage();
-
-        // Inject optimal CSS zoom scaling to prevent over-zooming on laptop and high-DPI displays
-        double zoom = ConfigReader.getBrowserZoom();
-        if (zoom > 0 && zoom != 1.0) {
-            String zoomPercent = (int) (zoom * 100) + "%";
-            page.addInitScript("() => {" +
-                    "  const applyZoom = () => {" +
-                    "    if (document.body) document.body.style.zoom = '" + zoomPercent + "';" +
-                    "    if (document.documentElement) document.documentElement.style.zoom = '" + zoomPercent + "';" +
-                    "  };" +
-                    "  if (document.readyState === 'loading') {" +
-                    "    document.addEventListener('DOMContentLoaded', applyZoom);" +
-                    "  } else {" +
-                    "    applyZoom();" +
-                    "  }" +
-                    "}");
-        }
 
         page.setDefaultTimeout(ConfigReader.getDefaultTimeout());
         page.setDefaultNavigationTimeout(ConfigReader.getNavigationTimeout());
