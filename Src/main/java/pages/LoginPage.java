@@ -28,12 +28,28 @@ public class LoginPage extends BasePage {
     public void navigate() {
         String url = ConfigReader.getBaseUrl();
         page.navigate(url);
+        applyZoom();
         WaitUtils.waitForNetworkIdleOrStabilized(page);
+    }
+
+    public void applyZoom() {
+        double zoom = ConfigReader.getBrowserZoom();
+        if (zoom > 0 && zoom != 1.0) {
+            String zoomPercent = (int) (zoom * 100) + "%";
+            try {
+                page.evaluate("zoom => {" +
+                        "  if (document.body) document.body.style.zoom = zoom;" +
+                        "  if (document.documentElement) document.documentElement.style.zoom = zoom;" +
+                        "}", zoomPercent);
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     @Override
     public boolean isLoaded() {
         try {
+            applyZoom();
             WaitUtils.waitForElementVisible(employeeInput, ConfigReader.getDefaultTimeout());
             WaitUtils.waitForElementVisible(signInButton, ConfigReader.getDefaultTimeout());
             return employeeInput.isVisible() && signInButton.isVisible() && personaSelector.isAvailable();

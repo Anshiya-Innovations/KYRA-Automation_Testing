@@ -5,6 +5,7 @@ import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.ViewportSize;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,6 +13,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import utils.ConfigReader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(TestFailureWatcher.class)
@@ -30,10 +34,15 @@ public abstract class BaseTest {
     @BeforeAll
     public static void setUpClass() {
         playwright = Playwright.create();
+        List<String> args = new ArrayList<>();
+        if (ConfigReader.isMaximized()) {
+            args.add("--start-maximized");
+        }
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
                         .setHeadless(ConfigReader.isHeadless())
                         .setSlowMo(ConfigReader.getSlowMo())
+                        .setArgs(args)
         );
     }
 
@@ -51,12 +60,34 @@ public abstract class BaseTest {
 
     @BeforeEach
     public void setUp() {
-        // Use a completely isolated, clean browser context for each test
-        context = browser.newContext(
-                new Browser.NewContextOptions()
-                        .setViewportSize(1440, 900)
-        );
+        Browser.NewContextOptions options = new Browser.NewContextOptions();
+        if (ConfigReader.isMaximized()) {
+            // Null viewport allows Chromium to use full native window dimensions without forced constraints
+            options.setViewportSize((ViewportSize) null);
+        } else {
+            options.setViewportSize(1280, 800);
+        }
+
+        context = browser.newContext(options);
         page = context.newPage();
+
+        // Inject optimal CSS zoom scaling to prevent over-zooming on laptop and high-DPI displays
+        double zoom = ConfigReader.getBrowserZoom();
+        if (zoom > 0 && zoom != 1.0) {
+            String zoomPercent = (int) (zoom * 100) + "%";
+            page.addInitScript("() => {" +
+                    "  const applyZoom = () => {" +
+                    "    if (document.body) document.body.style.zoom = '" + zoomPercent + "';" +
+                    "    if (document.documentElement) document.documentElement.style.zoom = '" + zoomPercent + "';" +
+                    "  };" +
+                    "  if (document.readyState === 'loading') {" +
+                    "    document.addEventListener('DOMContentLoaded', applyZoom);" +
+                    "  } else {" +
+                    "    applyZoom();" +
+                    "  }" +
+                    "}");
+        }
+
         page.setDefaultTimeout(ConfigReader.getDefaultTimeout());
         page.setDefaultNavigationTimeout(ConfigReader.getNavigationTimeout());
     }

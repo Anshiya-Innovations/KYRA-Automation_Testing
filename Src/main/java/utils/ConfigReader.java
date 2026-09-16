@@ -40,6 +40,14 @@ public class ConfigReader {
         return Integer.parseInt(getProperty("browser.slowMo", "200"));
     }
 
+    public static boolean isMaximized() {
+        return Boolean.parseBoolean(getProperty("browser.maximized", "true"));
+    }
+
+    public static double getBrowserZoom() {
+        return Double.parseDouble(getProperty("browser.zoom", "0.85"));
+    }
+
     public static int getDefaultTimeout() {
         return Integer.parseInt(getProperty("timeout.default", "10000"));
     }
