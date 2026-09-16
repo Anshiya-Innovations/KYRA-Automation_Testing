@@ -34,13 +34,50 @@ public class ScreenshotUtils {
                 System.out.println("Failed Step : " + failedStep);
                 System.out.println("Persona     : " + persona);
                 System.out.println("Employee ID : " + employeeId);
-                System.out.println("==================================================");
-
                 return targetPath.toString();
             }
         } catch (Exception e) {
             System.err.println("Failed to capture screenshot: " + e.getMessage());
         }
         return null;
+    }
+
+    public static String captureStepFailure(Page page, String testName, String step, String persona, String employeeId, String currentUrl, String errorMessage, String selectorUsed) {
+        try {
+            File dir = new File(SCREENSHOT_DIR);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            String safeTestName = (testName != null ? testName.trim() : "Test");
+            String safeEmpId = (employeeId != null ? employeeId.trim() : "emp");
+            String fileName = safeTestName + "_" + safeEmpId + "_failure.png";
+            Path targetPath = Paths.get(SCREENSHOT_DIR, fileName);
+
+            if (page != null) {
+                page.screenshot(new Page.ScreenshotOptions()
+                        .setPath(targetPath)
+                        .setFullPage(true));
+            }
+
+            System.out.println();
+            System.out.println("==================================================");
+            System.out.println("TEST STEP FAILURE DETAILS");
+            System.out.println("Test Name     : " + testName);
+            System.out.println("Step          : " + step);
+            System.out.println("Persona       : " + persona);
+            System.out.println("Employee ID   : " + employeeId);
+            System.out.println("Current URL   : " + (currentUrl != null ? currentUrl : (page != null ? page.url() : "N/A")));
+            System.out.println("Error Message : " + errorMessage);
+            System.out.println("Selector Used : " + (selectorUsed != null ? selectorUsed : "N/A"));
+            System.out.println("Screenshot    : " + targetPath.toAbsolutePath());
+            System.out.println("==================================================");
+            System.out.println();
+
+            return targetPath.toString();
+        } catch (Exception e) {
+            System.err.println("Failed to capture step failure: " + e.getMessage());
+            return null;
+        }
     }
 }

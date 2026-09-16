@@ -12,6 +12,11 @@ public class StepReporter {
         this.suiteName = suiteName;
     }
 
+    public void section(String sectionTitle) {
+        steps.put(sectionTitle, "---SECTION---");
+        System.out.printf("%n--- %s ---%n", sectionTitle);
+    }
+
     public void pass(String stepName) {
         steps.put(stepName, "PASS");
         System.out.printf("   ✓ [PASS] %s%n", stepName);
@@ -34,9 +39,14 @@ public class StepReporter {
         System.out.println();
         boolean allPassed = true;
         for (Map.Entry<String, String> entry : steps.entrySet()) {
-            System.out.printf("%-26s : %s%n", entry.getKey(), entry.getValue());
-            if (!"PASS".equals(entry.getValue())) {
-                allPassed = false;
+            if ("---SECTION---".equals(entry.getValue())) {
+                System.out.println();
+                System.out.println(entry.getKey());
+            } else {
+                System.out.printf("%-26s : %s%n", entry.getKey(), entry.getValue());
+                if (!"PASS".equals(entry.getValue())) {
+                    allPassed = false;
+                }
             }
         }
         System.out.println();

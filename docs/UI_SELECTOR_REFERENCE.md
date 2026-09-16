@@ -116,14 +116,34 @@ This document catalogs all verified UI selectors, components, and interactive el
 
 | Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Region Selection** | Header Title | `Step 2: Region Selection` | `.fioriCardHeaderTitle:has-text('Step 2: Region Selection')` | `Title` | Step 2 section main heading | Semantic header text | Evaluated dynamically when `addAccessStep === 2`. |
 | **Region Selection** | World Map Container | — | `#mapWrapper`, `#worldMapImgAccessPage` | `div / img` | Interactive SVG/Image world map | Unique IDs in embedded map HTML | Confirms Step 2 map is displayed. |
+| **Region Selection** | Select All Regions Button | `Select All Regions` | `#selectAllBtn`, `.select-all-btn-wrapper:has-text('Select All Regions')` | `div.select-all-btn-wrapper` | Selects all 7 operating regions at once | Unique ID `#selectAllBtn` | Embedded inside `#mapWrapper`. Sets `mapSelectedRegions` in model. |
 | **Region Selection** | Selected Regions Header | `SELECTED REGIONS` | `.selected-regions-header`, `:text('SELECTED REGIONS')` | `Text` | Summary card heading | Stable CSS class and visible text | Confirms Step 2 selection container. |
-| **Region Selection** | Step 2 Progress Node | `2. Region Selection` | `.kyraStepNode:has-text('2. Region Selection')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 2 stage. |
-| **Region Selection** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button:has-text('Previous')` | `button` | Return to Step 1 | Stable text and container scoping | Calls `onGoToAddAccessStep1`, restoring Step 1. |
+| **Region Selection** | No Regions Selected Text | `No regions selected` | `.no-selection-text`, `:text('No regions selected')` | `Text` | Empty state indicator | Visible when `!hasMapRegionSelection` | Inverted after clicking Select All Regions. |
+| **Region Selection** | Selected Region Chips | `North America ✕`, `Europe ✕`, etc. | `#selectedChipsList button.region-chip-btn`, `#selectedChipsList button` | `Button` | Selected region removable chip buttons | Scoped inside `#selectedChipsList` | Populated dynamically with all 7 regions when Select All is clicked. |
+| **Region Selection** | Step 2 Progress Node | `2. Region Selection` | `.kyraStepNode.kyraStepActive:has-text('2. Region Selection')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 2 stage. |
+| **Region Selection** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Previous'):visible` | `button` | Return to Step 1 Enterprise Scope | Stable text and container scoping | Calls `onGoToAddAccessStep1`, restoring Step 1. |
+| **Region Selection** | Next Button | `Next` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next'):visible` | `button` | Proceed to Step 3 Access Configuration | Primary button in Step 2 footer | Calls `onGoToAddAccessStep3`, validating region selection. |
+| **Region Selection** | Cancel Button | `Cancel` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel'):visible` | `button` | Cancel wizard / trigger discard dialog | Secondary button in Step 2 footer | Calls `onCloseAddAccessSector`, triggering Unsaved Changes dialog. |
 
 ---
 
-## 9. Unsaved Changes Dialog (`KyraDialog.js`)
+## 9. Access Configuration — Step 3 (`AccessPage.view.xml`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Access Configuration** | Header Title | `Step 3: Access Configuration` | `.fioriCardHeaderTitle:has-text('Step 3: Access Configuration')` | `Title` | Step 3 section main heading | Semantic header text | Evaluated dynamically when `addAccessStep === 3`. |
+| **Access Configuration** | Step 3 Progress Node | `3. Access Configuration` | `.kyraStepNode.kyraStepActive:has-text('3. Access Configuration')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 3 stage. |
+| **Access Configuration** | Target Systems Title | `Target Systems & Process Selection` | `:text('Target Systems & Process Selection')` | `core:Title` | Sub-step form title | Distinct visible section title | Confirms Sub-step 3.1 is rendered. |
+| **Access Configuration** | Systems MultiSelect | `Select target system processes...` | `[id$='inPageSystemsMultiSelect'], #application-app-preview-component---AccessPage--inPageSystemsMultiSelect` | `MultiComboBox` | Select target IT systems & processes | Unique SAPUI5 control ID | Multi-selection dropdown for target systems. |
+| **Access Configuration** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Previous'):visible` | `button` | Return to Step 2 Region Selection | Scoped secondary button in Step 3 footer | Calls `onStep3Slide1Previous`, setting `addAccessStep = 2`. |
+| **Access Configuration** | Cancel Button | `Cancel` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel'):visible` | `button` | Cancel wizard trigger | Scoped secondary button in Step 3 footer | Calls `onCloseAddAccessSector`. |
+| **Access Configuration** | Next Button | `Next` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next'):visible` | `button` | Continue to Sub-step 3.2 | Emphasized primary button in Step 3 footer | Calls `onStep3Slide1Continue`. |
+
+---
+
+## 10. Unsaved Changes Dialog (`KyraDialog.js`)
 
 | Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -132,5 +152,6 @@ This document catalogs all verified UI selectors, components, and interactive el
 | **Dialog** | Dialog Title | `Unsaved Changes` | `#kyra_dialog_overlay h3`, `.kyraDialogCard h3` | `h3` | Warning heading | Semantic header tag inside overlay | Displays "Unsaved Changes" title. |
 | **Dialog** | Dialog Message | `If you navigate to another section...` | `#kyra_dialog_overlay div:has-text('in-progress access request')` | `div` | Discard warning message | Scoped text matching | Informs user that in-progress request will be lost. |
 | **Dialog** | Stay on Page Button | `Stay on Page` | `#kyra_dialog_cancel_btn`, `button:has-text('Stay on Page')` | `button` | Abort discard and remain on page | Unique ID `#kyra_dialog_cancel_btn` | Dismisses dialog without clearing state. |
-| **Dialog** | Proceed & Discard Button | `Proceed & Discard` | `#kyra_dialog_confirm_btn`, `button:has-text('Proceed & Discard')` | `button` | Confirm discard and close wizard | Unique ID `#kyra_dialog_confirm_btn` | **DO NOT CLICK** in this test phase. |
+| **Dialog** | Proceed & Discard Button | `Proceed & Discard` | `#kyra_dialog_confirm_btn`, `button:has-text('Proceed & Discard')` | `button` | Confirm discard and close wizard | Unique ID `#kyra_dialog_confirm_btn` | Dismisses dialog and resets wizard state. |
 | **Dialog** | Close "X" Button | `✕` | `#kyra_dialog_close_btn` | `button` | Top-right close icon | Unique ID `#kyra_dialog_close_btn` | Dismisses dialog. |
+
