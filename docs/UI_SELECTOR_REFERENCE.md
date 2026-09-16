@@ -48,7 +48,7 @@ This document catalogs all verified UI selectors, components, and interactive el
 | **Requester** | View All Button | `button.kyraViewAllBtn` | `Button` | Full master view toggle | Opens master entitlements table. |
 | **Requester** | Active Entitlements Table | `#application-app-preview-component---AccessPage--myAccessTable` | `Table` | Table listing user's granted roles | Columns: SYSTEM NAME, SERVICES, TEAM, PERSONA, EXPIRY DATE, STATUS, ACTION. |
 | **Requester** | Pending Requests Card | `#application-app-preview-component---AccessPage--cardPendingRequests` | `VBox.fioriCardPending` | Action card to view pending requests | Clickable KPI card. |
-| **Requester** | Add Access Card | `#application-app-preview-component---AccessPage--cardAddAccess` | `VBox.fioriCardAdd` | Action card to launch access request wizard | Clickable action card. |
+| **Requester** | Add Access Card | `#application-app-preview-component---AccessPage--cardAddAccess` | `VBox.fioriCardAdd` | Action card to launch access request wizard | Clickable action card. Text: "Add Access", "Request new access", "Create Request". |
 | **Requester** | Remove Access Card | `#application-app-preview-component---AccessPage--cardRemoveAccess` | `VBox.fioriCardRemove` | Action card to launch revocation flow | Clickable action card. |
 
 ---
@@ -91,3 +91,46 @@ This document catalogs all verified UI selectors, components, and interactive el
 | **Logout Dialog** | Cancel Button | `#kyra_signout_cancel_btn` | `button` | Dismiss sign-out and stay logged in | Text: "Stay Signed In". |
 | **Logout Dialog** | Confirm Sign Out Button | `#kyra_signout_confirm_btn` | `button` | Confirm session termination | Text: "Yes, Sign Out". Clears session and routes back to Login. |
 | **Logout Dialog** | Close "X" Button | `#kyra_signout_cancel_x` | `button` | Alternative modal dismiss button | Top-right close icon. |
+
+---
+
+## 7. Enterprise Scope Selection — Step 1 (`AccessPage.view.xml`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Add Access** | Wizard Container | — | `[id$='addAccessSectionContainer']` | `VBox` | Main container for Add Access wizard | Unique SAPUI5 container ID | Toggled visible by clicking `cardAddAccess`. |
+| **Enterprise Scope** | Scope Title | `Enterprise Scope Selection` | `.kyraScopeTitle`, `:text('Enterprise Scope Selection')` | `Title` | Section main heading | Semantic class and text | Confirms Step 1 is rendered. |
+| **Enterprise Scope** | Step 1 Progress Node | `1. Business Sector` / `In Progress` | `.kyraStepNode:has-text('1. Business Sector')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active wizard stage. |
+| **Enterprise Scope** | Business Sector Input | `Select Business Sector...` | `[id$='inPageBusinessSectorSelect-inner']` | `ComboBox input` | Text display and input for sector | Inner input of SAPUI5 ComboBox | Contains selected sector text value. |
+| **Enterprise Scope** | Business Sector Arrow | — | `[id$='inPageBusinessSectorSelect-arrow']` | `span` | Dropdown open arrow | Standard SAPUI5 ComboBox arrow suffix | Click opens the sector options list. |
+| **Enterprise Scope** | Sector Options | `Finance & Enterprise Performance`, etc. | `.sapMPopover:visible li[role='option']` | `li` | Sector dropdown options | Accessible role + text matching | Target: `Finance & Enterprise Performance`. |
+| **Enterprise Scope** | Business Function Input | `Select Business Function...` | `[id$='inPageBusinessFunctionSelect-inner']` | `ComboBox input` | Text display and input for function | Inner input of SAPUI5 ComboBox | Populated after Sector is chosen. |
+| **Enterprise Scope** | Business Function Arrow | — | `[id$='inPageBusinessFunctionSelect-arrow']` | `span` | Dropdown open arrow | Standard SAPUI5 ComboBox arrow suffix | Click opens available functions. |
+| **Enterprise Scope** | Function Options | `Corporate Accounting`, etc. | `.sapMPopover:visible li[role='option']` | `li` | Function dropdown options | Accessible role + text matching | Target: `Corporate Accounting`. |
+| **Enterprise Scope** | Next Button | `Next` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next')` | `button` | Proceed to Region Selection | Emphasized primary button in Step 1 footer | Advances wizard to Step 2 (`addAccessStep=2`). |
+| **Enterprise Scope** | Cancel Button | `Cancel` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel')` | `button` | Discard request trigger | Secondary button on bottom-left of Step 1 | Triggers `onCloseAddAccessSector` and opens confirmation dialog. |
+
+---
+
+## 8. Region Selection — Step 2 (`AccessPage.view.xml`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Region Selection** | World Map Container | — | `#mapWrapper`, `#worldMapImgAccessPage` | `div / img` | Interactive SVG/Image world map | Unique IDs in embedded map HTML | Confirms Step 2 map is displayed. |
+| **Region Selection** | Selected Regions Header | `SELECTED REGIONS` | `.selected-regions-header`, `:text('SELECTED REGIONS')` | `Text` | Summary card heading | Stable CSS class and visible text | Confirms Step 2 selection container. |
+| **Region Selection** | Step 2 Progress Node | `2. Region Selection` | `.kyraStepNode:has-text('2. Region Selection')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 2 stage. |
+| **Region Selection** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button:has-text('Previous')` | `button` | Return to Step 1 | Stable text and container scoping | Calls `onGoToAddAccessStep1`, restoring Step 1. |
+
+---
+
+## 9. Unsaved Changes Dialog (`KyraDialog.js`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Dialog** | Overlay Container | — | `#kyra_dialog_overlay` | `div` | Fullscreen modal backdrop | Unique ID in `KyraDialog.js` | Appended to `document.body` with `z-index: 2000000`. |
+| **Dialog** | Dialog Card | — | `.kyraDialogCard`, `#kyra_dialog_overlay > div` | `div` | Central modal card | Stable CSS class | Contains header, body message, and footer actions. |
+| **Dialog** | Dialog Title | `Unsaved Changes` | `#kyra_dialog_overlay h3`, `.kyraDialogCard h3` | `h3` | Warning heading | Semantic header tag inside overlay | Displays "Unsaved Changes" title. |
+| **Dialog** | Dialog Message | `If you navigate to another section...` | `#kyra_dialog_overlay div:has-text('in-progress access request')` | `div` | Discard warning message | Scoped text matching | Informs user that in-progress request will be lost. |
+| **Dialog** | Stay on Page Button | `Stay on Page` | `#kyra_dialog_cancel_btn`, `button:has-text('Stay on Page')` | `button` | Abort discard and remain on page | Unique ID `#kyra_dialog_cancel_btn` | Dismisses dialog without clearing state. |
+| **Dialog** | Proceed & Discard Button | `Proceed & Discard` | `#kyra_dialog_confirm_btn`, `button:has-text('Proceed & Discard')` | `button` | Confirm discard and close wizard | Unique ID `#kyra_dialog_confirm_btn` | **DO NOT CLICK** in this test phase. |
+| **Dialog** | Close "X" Button | `✕` | `#kyra_dialog_close_btn` | `button` | Top-right close icon | Unique ID `#kyra_dialog_close_btn` | Dismisses dialog. |

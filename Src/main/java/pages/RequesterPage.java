@@ -93,6 +93,14 @@ public class RequesterPage extends BasePage {
         return cardAddAccess.isVisible();
     }
 
+    public void clickAddAccess() {
+        WaitUtils.waitForElementVisible(cardAddAccess, ConfigReader.getDefaultTimeout());
+        cardAddAccess.scrollIntoViewIfNeeded();
+        WaitUtils.stabilize(page, 200);
+        cardAddAccess.click();
+        WaitUtils.stabilize(page, 400);
+    }
+
     public boolean isCardPendingRequestsVisible() {
         return cardPendingRequests.isVisible();
     }

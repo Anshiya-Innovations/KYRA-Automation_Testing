@@ -105,6 +105,7 @@ mvn clean test-compile
 ```bash
 mvn test -Dtest=RequesterLoginTest
 mvn test -Dtest=RequesterPageTest
+mvn test -Dtest=RequesterAddAccessTest
 ```
 
 **2. Approver Tests:**
@@ -204,3 +205,13 @@ During the read-only analysis of the existing frontend and backend implementatio
    - Clicking "Sign Out" in the header opens a custom HTML card inside a `sap.m.Dialog`.
    - The confirm button is `#kyra_signout_confirm_btn` ("Yes, Sign Out").
    - Upon confirmation, `_performLogout()` clears session data and navigates back to the Login view (`TargetLogin`), resetting the form fields.
+
+5. **In-Page Add Access Wizard (`addAccessSectionContainer`)**:
+   - Clicking the "Add Access" card (`#application-app-preview-component---AccessPage--cardAddAccess`) reveals the multi-step access wizard directly within `AccessPage`.
+   - **Step 1: Enterprise Scope Selection**: Contains two `sap.m.ComboBox` controls: Business Sector (`inPageBusinessSectorSelect`) and Business Function (`inPageBusinessFunctionSelect`). Functions are dynamically loaded based on sector selection.
+   - **Step 2: Region Selection**: Contains the embedded SVG/Image world map (`#mapWrapper`), region pin layer, and selected regions summary chips. Navigating between Step 1 and Step 2 is controlled by the "Next" (`onGoToAddAccessStep2`) and "Previous" (`onGoToAddAccessStep1`) buttons.
+
+6. **Unsaved Changes Dialog (`KyraDialog.js`)**:
+   - When an access request is in progress and the user clicks "Cancel", `_confirmDiscardAddAccess()` intercepts the event and displays the global `window.KyraDialog` modal dialog (`#kyra_dialog_overlay`).
+   - Clicking "Stay on Page" (`#kyra_dialog_cancel_btn`) aborts the cancellation and preserves the in-progress wizard state on the Enterprise Scope Selection screen.
+   - Clicking "Proceed & Discard" (`#kyra_dialog_confirm_btn`) clears the model state and closes the wizard.

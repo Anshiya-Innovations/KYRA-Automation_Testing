@@ -25,10 +25,26 @@ public class StepReporter {
     public void printSummary() {
         System.out.println();
         System.out.println("========================================");
-        System.out.println(suiteName.toUpperCase() + " TEST");
+        String header = suiteName.toUpperCase().trim();
+        if (!header.endsWith("TEST")) {
+            header += " TEST";
+        }
+        System.out.println(header);
         System.out.println("========================================");
+        System.out.println();
+        boolean allPassed = true;
         for (Map.Entry<String, String> entry : steps.entrySet()) {
-            System.out.printf("%-18s: %s%n", entry.getKey(), entry.getValue());
+            System.out.printf("%-26s : %s%n", entry.getKey(), entry.getValue());
+            if (!"PASS".equals(entry.getValue())) {
+                allPassed = false;
+            }
+        }
+        System.out.println();
+        System.out.println("========================================");
+        if (allPassed) {
+            System.out.println("TEST PASSED");
+        } else {
+            System.out.println("TEST FAILED");
         }
         System.out.println("========================================");
         System.out.println();
