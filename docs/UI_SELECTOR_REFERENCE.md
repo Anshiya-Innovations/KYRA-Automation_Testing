@@ -136,14 +136,38 @@ This document catalogs all verified UI selectors, components, and interactive el
 | **Access Configuration** | Header Title | `Step 3: Access Configuration` | `.fioriCardHeaderTitle:has-text('Step 3: Access Configuration')` | `Title` | Step 3 section main heading | Semantic header text | Evaluated dynamically when `addAccessStep === 3`. |
 | **Access Configuration** | Step 3 Progress Node | `3. Access Configuration` | `.kyraStepNode.kyraStepActive:has-text('3. Access Configuration')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 3 stage. |
 | **Access Configuration** | Target Systems Title | `Target Systems & Process Selection` | `:text('Target Systems & Process Selection')` | `core:Title` | Sub-step form title | Distinct visible section title | Confirms Sub-step 3.1 is rendered. |
-| **Access Configuration** | Systems MultiSelect | `Select target system processes...` | `[id$='inPageSystemsMultiSelect'], #application-app-preview-component---AccessPage--inPageSystemsMultiSelect` | `MultiComboBox` | Select target IT systems & processes | Unique SAPUI5 control ID | Multi-selection dropdown for target systems. |
-| **Access Configuration** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Previous'):visible` | `button` | Return to Step 2 Region Selection | Scoped secondary button in Step 3 footer | Calls `onStep3Slide1Previous`, setting `addAccessStep = 2`. |
-| **Access Configuration** | Cancel Button | `Cancel` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel'):visible` | `button` | Cancel wizard trigger | Scoped secondary button in Step 3 footer | Calls `onCloseAddAccessSector`. |
-| **Access Configuration** | Next Button | `Next` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next'):visible` | `button` | Continue to Sub-step 3.2 | Emphasized primary button in Step 3 footer | Calls `onStep3Slide1Continue`. |
+| **Access Configuration** | Target Systems MultiSelect | `Select target system processes...` | `[id$='inPageSystemsMultiSelect'], #application-app-preview-component---AccessPage--inPageSystemsMultiSelect` | `MultiComboBox` | Select target IT systems & processes | Unique SAPUI5 control ID | Multi-selection dropdown for target systems. |
+| **Access Configuration** | Target System Option | `SAP BTP Cloud Platform` | `.sapMPopover:visible li:has-text('SAP BTP Cloud Platform')` | `li` | Target System item selection | Visible text matching in open popover | Populates system slide card upon selection. |
+| **Access Configuration** | Service / Topic MultiSelect | `Select service topics for this system...` | `[id$='inPageServicesMultiSelect'], #application-app-preview-component---AccessPage--inPageServicesMultiSelect` | `MultiComboBox` | Select services/topics for system | Unique SAPUI5 control ID | Options: System Administrator, System Owners, Stakeholders. |
+| **Access Configuration** | Service / Topic Option | `System Administrator` | `.sapMPopover:visible li:has-text('System Administrator')` | `li` | Service topic item selection | Visible text matching in open popover | Triggers population of Team Roles list. |
+| **Access Configuration** | Team Role MultiSelect | `Select team roles for this system...` | `[id$='inPageTeamMultiSelect'], #application-app-preview-component---AccessPage--inPageTeamMultiSelect` | `MultiComboBox` | Select functional team roles | Unique SAPUI5 control ID | Enabled when Service / Topic is selected. |
+| **Access Configuration** | Team Role Option | `IT Developers (System Administrator)` | `.sapMPopover:visible li:has-text('IT Developers (System Administrator)')` | `li` | Team Role item selection | Visible text matching in open popover | Triggers population of Assigned Personas list. |
+| **Access Configuration** | Assigned Persona MultiSelect | `Select personas for this system...` | `[id$='inPagePersonaMultiSelect'], #application-app-preview-component---AccessPage--inPagePersonaMultiSelect` | `MultiComboBox` | Select assigned persona entitlements | Unique SAPUI5 control ID | Enabled when Team Role is selected. |
+| **Access Configuration** | Assigned Persona Option | `Frontend & UI Developer Persona (IT Developers)` | `.sapMPopover:visible li:has-text('Frontend & UI Developer Persona (IT Developers)')` | `li` | Persona item selection | Visible text matching in open popover | Minimum valid persona entitlement for UI. |
+| **Access Configuration** | Slide 1 Next Button | `Next` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next'):visible` | `button` | Advance from Slide 1 to Sub-step 3.2 | Scoped primary button | Calls `onStep3Slide1Continue`, sets `addAccessConfigSubStep = 2`. |
+| **Access Configuration** | Access Duration Input | `Select Access Duration...` | `[id$='inPageDurationSelect-inner']` | `ComboBox input` | Display and choose access duration | Inner input of SAPUI5 ComboBox | Contains selected duration text value. |
+| **Access Configuration** | Access Duration Option | `30 Days (Temporary)` | `.sapMPopover:visible li:has-text('30 Days (Temporary)')` | `li` | Temporary duration item selection | Visible text matching in open popover | Options: Permanent (Default), 30 Days (Temporary), 90 Days (Project). |
+| **Access Configuration** | Business Justification Textarea | `Provide detailed business justification...` | `[id$='inPageJustificationArea'] textarea` | `TextArea` | Enter justification text | Unique SAPUI5 textarea control | Accepts business rationale string (e.g. `TEST`). |
+| **Access Configuration** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Previous'):visible` | `button` | Return to previous slide/step | Scoped secondary button in Step 3 footer | On Slide 1: calls `onStep3Slide1Previous`; on Slide 2: calls `onBackToSystemSlides`. |
+| **Access Configuration** | Cancel Button | `Cancel` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel'):visible` | `button` | Cancel wizard trigger | Scoped secondary button in Step 3 footer | Calls `onCloseAddAccessSector`, opening Unsaved Changes dialog. |
+| **Access Configuration** | Slide 2 Next Button | `Next` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next'):visible` | `button` | Advance from Step 3 to Step 4 | Emphasized primary button in Step 3 footer | Calls `onGoToAddAccessStep4`, setting `addAccessStep = 4`. |
 
 ---
 
-## 10. Unsaved Changes Dialog (`KyraDialog.js`)
+## 10. Access Validation — Step 4 (`AccessPage.view.xml`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Access Validation** | Header Title | `Step 4: Access Validation` | `.fioriCardHeaderTitle:has-text('Step 4: Access Validation')` | `Title` | Step 4 section main heading | Semantic header text | Evaluated dynamically when `addAccessStep === 4`. |
+| **Access Validation** | Step 4 Progress Node | `4. Access Validation` | `.kyraStepNode.kyraStepActive:has-text('4. Access Validation')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 4 stage. |
+| **Access Validation** | Threshold Limits Card | `Threshold Limits` | `.kyraValCardTitle:has-text('Threshold Limits')` | `Title` | Threshold limits validation section | Semantic card title class | Shows badge `0 Issues` or `No Threshold Limits Exceeded`. |
+| **Access Validation** | Restricted Records Card | `Restricted Records` | `.kyraValCardTitle:has-text('Restricted Records')` | `Title` | Restricted records validation section | Semantic card title class | Displays table with restricted access classification details. |
+| **Access Validation** | Duplicate Roles Card | `Duplicate Roles` | `.kyraValCardTitle:has-text('Duplicate Roles')` | `Title` | Duplicate roles validation section | Semantic card title class | Shows badge `0 Duplicates` or `No Duplicate Roles Detected`. |
+| **Access Validation** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Previous'):visible` | `button` | Return to Step 3 Access Configuration | Scoped secondary button in Step 4 footer | Calls `onGoBackToDurationSlide`, setting `addAccessStep = 3` and `addAccessConfigSubStep = 2`. |
+
+---
+
+## 11. Unsaved Changes Dialog (`KyraDialog.js`)
 
 | Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |

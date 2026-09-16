@@ -1,29 +1,41 @@
 package utils;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StepReporter {
 
+    public static class ReportEntry {
+        public final String name;
+        public final String status;
+        public final boolean isSection;
+
+        public ReportEntry(String name, String status, boolean isSection) {
+            this.name = name;
+            this.status = status;
+            this.isSection = isSection;
+        }
+    }
+
     private final String suiteName;
-    private final Map<String, String> steps = new LinkedHashMap<>();
+    private final List<ReportEntry> entries = new ArrayList<>();
 
     public StepReporter(String suiteName) {
         this.suiteName = suiteName;
     }
 
     public void section(String sectionTitle) {
-        steps.put(sectionTitle, "---SECTION---");
+        entries.add(new ReportEntry(sectionTitle, "---SECTION---", true));
         System.out.printf("%n--- %s ---%n", sectionTitle);
     }
 
     public void pass(String stepName) {
-        steps.put(stepName, "PASS");
+        entries.add(new ReportEntry(stepName, "PASS", false));
         System.out.printf("   ✓ [PASS] %s%n", stepName);
     }
 
     public void fail(String stepName) {
-        steps.put(stepName, "FAIL");
+        entries.add(new ReportEntry(stepName, "FAIL", false));
         System.out.printf("   ✗ [FAIL] %s%n", stepName);
     }
 
@@ -38,13 +50,17 @@ public class StepReporter {
         System.out.println("========================================");
         System.out.println();
         boolean allPassed = true;
-        for (Map.Entry<String, String> entry : steps.entrySet()) {
-            if ("---SECTION---".equals(entry.getValue())) {
-                System.out.println();
-                System.out.println(entry.getKey());
+        boolean firstSection = true;
+        for (ReportEntry entry : entries) {
+            if (entry.isSection) {
+                if (!firstSection) {
+                    System.out.println();
+                }
+                System.out.println(entry.name);
+                firstSection = false;
             } else {
-                System.out.printf("%-26s : %s%n", entry.getKey(), entry.getValue());
-                if (!"PASS".equals(entry.getValue())) {
+                System.out.printf("%-27s : %s%n", entry.name, entry.status);
+                if (!"PASS".equals(entry.status)) {
                     allPassed = false;
                 }
             }
