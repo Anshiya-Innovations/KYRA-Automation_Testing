@@ -179,3 +179,40 @@ This document catalogs all verified UI selectors, components, and interactive el
 | **Dialog** | Proceed & Discard Button | `Proceed & Discard` | `#kyra_dialog_confirm_btn`, `button:has-text('Proceed & Discard')` | `button` | Confirm discard and close wizard | Unique ID `#kyra_dialog_confirm_btn` | Dismisses dialog and resets wizard state. |
 | **Dialog** | Close "X" Button | `✕` | `#kyra_dialog_close_btn` | `button` | Top-right close icon | Unique ID `#kyra_dialog_close_btn` | Dismisses dialog. |
 
+---
+
+## 12. Review & Summary — Step 5 (`AccessPage.view.xml`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Review & Summary** | Header Title | `Step 5: Review & Summary` | `.fioriCardHeaderTitle:has-text('Step 5: Review & Summary')` | `Title` | Step 5 section main heading | Semantic header text | Evaluated dynamically when `addAccessStep === 5`. |
+| **Review & Summary** | Step 5 Progress Node | `5. Review & Summary` | `.kyraStepNode.kyraStepActive:has-text('5. Review & Summary')` | `VBox` | Progress tracker step indicator | Active step indicator | Confirms active Step 5 stage. |
+| **Review & Summary** | Top Details Card | — | `.kyraSummaryTopDetailsCard` | `VBox` | Container for governance metadata | Unique CSS class | Contains requester ID, sector, function, region, duration, justification. |
+| **Review & Summary** | Requester ID Value | `emp010` | `.kyraSummaryDetailItem:has-text('REQUESTER ID') .kyraSummaryDetailValue`, `.kyraRequesterIdHighlight` | `Text` | Displayed employee ID | Scoped item value | Matches logged-in user. |
+| **Review & Summary** | Business Sector Value | `Finance & Enterprise Performance` | `.kyraSummaryDetailItem:has-text('BUSINESS SECTOR') .kyraSummaryDetailValue` | `Text` | Displayed sector | Scoped item value | Matches Step 1 selection. |
+| **Review & Summary** | Business Function Value | `Corporate Accounting` | `.kyraSummaryDetailItem:has-text('BUSINESS FUNCTION') .kyraSummaryDetailValue` | `Text` | Displayed function | Scoped item value | Matches Step 1 selection. |
+| **Review & Summary** | Operating Region Value | `All Regions` / `Europe` | `.kyraSummaryDetailItem:has-text('OPERATING REGION') .kyraSummaryDetailValue` | `Text` | Displayed operating region | Scoped item value | Matches Step 2 selection. |
+| **Review & Summary** | Access Duration Value | `30 Days (Temporary)` | `.kyraSummaryDetailItem:has-text('ACCESS DURATION') .kyraSummaryDetailValue` | `Text` | Displayed access duration | Scoped item value | Matches Step 3 duration selection. |
+| **Review & Summary** | Business Justification Text | `TEST` | `.kyraSummaryDetailJustification` | `Text` | Displayed justification text | Unique CSS class | Matches Step 3 justification textarea. |
+| **Review & Summary** | Target System Card Container | — | `.kyraSummaryCardContainer` | `VBox` | Container for each target system's table | Unique CSS class | Iterated via `addAccessSummaryTables`. |
+| **Review & Summary** | Target System Card Title | `Target System 1: ...` | `.kyraSummaryCardTitle` | `Title` | Heading for system card | Unique CSS class | Contains system number and system name. |
+| **Review & Summary** | Target System Edit Button | `Edit` | `button.kyraSummaryEditBtn:has-text('Edit')` | `button` | Enter inline edit mode for system | Unique CSS class | Sets `isEditingFromSummary=true` and navigates to Step 3. |
+| **Review & Summary** | Edit Mode OK Button | `OK` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('OK'):visible` | `button` | Save configuration changes | Scoped primary button | Calls `onSaveAndReturnToSummary`, re-evaluates validation, and returns to Step 5. |
+| **Review & Summary** | Previous Button | `Previous` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Previous'):visible` | `button` | Return to Step 4 Access Validation | Scoped secondary button | Calls `onNavBackFromStep5`, sets `addAccessStep = 4`. |
+| **Review & Summary** | Cancel Request Button | `Cancel Request` | `[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel Request'):visible` | `button` | Discard request trigger | Scoped secondary button | Calls `onCloseAddAccessSector`, opening Unsaved Changes dialog. |
+| **Review & Summary** | Submit Access Request Button | `Submit Access Request` | `[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Submit Access Request'):visible` | `button` | Final access submission action | Scoped primary button | Calls `onFinalSubmitInPageAddAccess` to persist to database. |
+
+---
+
+## 13. Submission Modal Dialog (`KyraDialog.js` / `AccessPage.controller.js`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Submission Dialog** | Overlay Container | — | `#kyra_dialog_overlay` | `div` | Fullscreen modal backdrop | Unique ID in `KyraDialog.js` | Appended to `document.body` with `z-index: 2000000`. |
+| **Submission Dialog** | Dialog Card | — | `.kyraDialogCard`, `#kyra_dialog_overlay > div` | `div` | Central modal card container | Stable CSS class | Contains submission summary and actions. |
+| **Submission Dialog** | Dialog Title | `Access Request Submitted` | `#kyra_dialog_overlay h3` | `h3` | Confirmation heading | Scoped heading selector | Confirms successful request creation. |
+| **Submission Dialog** | Submitted Badge | `Submitted X` | `#kyra_dialog_overlay span:has-text('Submitted')` | `span` | Submitted items count badge | Text matching | Indicates number of persisted requests. |
+| **Submission Dialog** | Scrollable Container | — | `.kyra-dialog-scroll-container` | `div` | Scroll container for submitted/excluded items | Unique CSS class | Contains item cards with request IDs. |
+| **Submission Dialog** | Done Button | `Done` | `#kyra_dialog_confirm_btn`, `button:has-text('Done')` | `button` | Close dialog and return to dashboard | Unique ID `#kyra_dialog_confirm_btn` | Dismisses modal, resets wizard, and returns to Requester dashboard. |
+| **Submission Dialog** | Close "X" Button | `✕` | `#kyra_dialog_close_btn` | `button` | Alternative modal dismiss button | Unique ID `#kyra_dialog_close_btn` | Dismisses modal and resets wizard. |
+

@@ -80,4 +80,30 @@ public class AccessValidationPage extends BasePage {
         previousBtn.click();
         WaitUtils.stabilize(page, 500);
     }
+
+    public void clickNext() {
+        advanceToStep5();
+    }
+
+    public void advanceToStep5() {
+        WaitUtils.waitForElementVisible(nextBtn, ConfigReader.getDefaultTimeout());
+        nextBtn.scrollIntoViewIfNeeded();
+        WaitUtils.stabilize(page, 200);
+        nextBtn.click();
+        WaitUtils.stabilize(page, 500);
+
+        // Check if Slide 2 (SoD Conflict Review) is displayed
+        try {
+            Locator sodTitle = page.locator(".fioriCardHeaderTitle:has-text('Step 4: SoD Conflict Review'), .kyraSodTitleRed, .kyraSodTitleAmber, .kyraSodSlideContainer").first();
+            if (sodTitle.isVisible()) {
+                Locator slide2NextBtn = page.locator("[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next'):visible, button:has-text('Next'):visible").first();
+                WaitUtils.waitForElementVisible(slide2NextBtn, ConfigReader.getDefaultTimeout());
+                slide2NextBtn.scrollIntoViewIfNeeded();
+                WaitUtils.stabilize(page, 200);
+                slide2NextBtn.click();
+                WaitUtils.stabilize(page, 600);
+            }
+        } catch (Exception ignored) {
+        }
+    }
 }

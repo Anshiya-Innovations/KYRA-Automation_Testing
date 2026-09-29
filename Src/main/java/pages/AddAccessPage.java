@@ -74,7 +74,13 @@ public class AddAccessPage extends BasePage {
 
         WaitUtils.waitForElementVisible(option, 5000);
         option.click();
-        WaitUtils.stabilize(page, 500);
+        WaitUtils.stabilize(page, 400);
+
+        try {
+            page.keyboard().press("Escape");
+            WaitUtils.stabilize(page, 200);
+        } catch (Exception ignored) {
+        }
     }
 
     public String getSelectedBusinessSector() {
@@ -101,7 +107,13 @@ public class AddAccessPage extends BasePage {
 
         WaitUtils.waitForElementVisible(option, 5000);
         option.click();
-        WaitUtils.stabilize(page, 500);
+        WaitUtils.stabilize(page, 400);
+
+        try {
+            page.keyboard().press("Escape");
+            WaitUtils.stabilize(page, 200);
+        } catch (Exception ignored) {
+        }
     }
 
     public String getSelectedBusinessFunction() {
@@ -112,9 +124,18 @@ public class AddAccessPage extends BasePage {
     public void clickNext() {
         WaitUtils.waitForElementVisible(step1NextBtn, ConfigReader.getDefaultTimeout());
         step1NextBtn.scrollIntoViewIfNeeded();
-        WaitUtils.stabilize(page, 200);
+        WaitUtils.stabilize(page, 300);
         step1NextBtn.click();
-        WaitUtils.stabilize(page, 500);
+        WaitUtils.stabilize(page, 600);
+
+        try {
+            Locator step2Title = page.locator(".selected-regions-header, .fioriCardHeaderTitle:has-text('Step 2: Region Selection')").first();
+            if (!step2Title.isVisible()) {
+                step1NextBtn.click(new Locator.ClickOptions().setForce(true));
+                WaitUtils.stabilize(page, 600);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     public void scrollToBottom() {

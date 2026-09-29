@@ -1,28 +1,27 @@
 package tests.requester;
 
 import base.BaseTest;
+import components.HeaderComponent;
+import components.LogoutDialog;
+import components.SubmissionDialog;
 import components.UnsavedChangesDialog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import pages.AccessConfigurationPage;
-import pages.AccessValidationPage;
-import pages.AddAccessPage;
-import pages.LoginPage;
-import pages.RegionSelectionPage;
-import pages.RequesterPage;
+import pages.*;
 import utils.ConfigReader;
 import utils.ScreenshotUtils;
 import utils.StepReporter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class RequesterAccessWizardTest extends BaseTest {
+public class RequesterEndToEndAccessTest extends BaseTest {
 
     @Test
-    @DisplayName("Requester Add Access Wizard through Step 4 and Cancel Flow")
-    public void testRequesterAddAccessWizard() {
-        StepReporter reporter = new StepReporter("KYRA REQUESTER ACCESS WIZARD");
+    @DisplayName("Requester End-to-End Access Request Wizard Flow")
+    public void testRequesterEndToEndAccessFlow() {
+        StepReporter reporter = new StepReporter("KYRA REQUESTER END-TO-END");
         String currentStep = "Initialization";
         String lastSelector = "N/A";
         final String persona = ConfigReader.getRequesterPersona();
@@ -42,35 +41,30 @@ public class RequesterAccessWizardTest extends BaseTest {
             loginPage.navigate();
             assertTrue(loginPage.isLoaded(), "Login page failed to load");
 
-            // 2. Requester Persona
             currentStep = "Requester Persona";
             setCurrentStep(currentStep);
             lastSelector = "#roleSelect-arrow, .role-selector";
             loginPage.selectPersona(persona);
             reporter.pass("Requester Persona");
 
-            // 3. Employee ID
             currentStep = "Employee ID";
             setCurrentStep(currentStep);
             lastSelector = "#employeeIdInput-inner, input[placeholder*='Employee ID']";
             loginPage.enterEmployeeId(employeeId);
             reporter.pass("Employee ID");
 
-            // 4. Sign In
             currentStep = "Sign In";
             setCurrentStep(currentStep);
             lastSelector = "#signInBtn, button:has-text('Sign In')";
             loginPage.clickSignIn();
             reporter.pass("Sign In");
 
-            // 5. Requester Page
             currentStep = "Requester Page";
             lastSelector = "#application-app-preview-component---AccessPage--accessPortalPage";
             RequesterPage requesterPage = new RequesterPage(page);
             assertTrue(requesterPage.isLoaded(), "Requester Page failed to load");
             reporter.pass("Requester Page");
 
-            // 6. Add Access
             currentStep = "Add Access";
             lastSelector = "#application-app-preview-component---AccessPage--cardAddAccess";
             requesterPage.clickAddAccess();
@@ -171,7 +165,7 @@ public class RequesterAccessWizardTest extends BaseTest {
             reporter.pass("Assigned Persona");
             reporter.pass("Team Role");
 
-            // Complete Sub-step 3.1: advance to Sub-step 3.2
+            // Advance to Slide 2 (Duration & Justification)
             currentStep = "Advance to Duration & Justification";
             lastSelector = "[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next')";
             configPage.clickNextSlide();
@@ -217,16 +211,13 @@ public class RequesterAccessWizardTest extends BaseTest {
             assertTrue(configPage.isStep3Active(), "Failed to return to Step 3 Access Configuration");
             reporter.pass("Previous");
 
-            // RETURN TO STEP 3
-            reporter.section("RETURN TO STEP 3");
+            // CANCEL TEST
+            reporter.section("CANCEL TEST");
 
-            currentStep = "Access Configuration";
+            currentStep = "Back to Step 3";
             lastSelector = ".fioriCardHeaderTitle:has-text('Step 3: Access Configuration')";
-            assertTrue(configPage.isStep3Active(), "Access Configuration Step 3 not active after return");
-            reporter.pass("Access Configuration");
-
-            // CANCEL FLOW
-            reporter.section("CANCEL FLOW");
+            assertTrue(configPage.isStep3Active(), "Wizard not on Step 3 Access Configuration");
+            reporter.pass("Back to Step 3");
 
             currentStep = "Cancel";
             lastSelector = "[id$='addAccessSectionContainer'] button.kyraSecondaryBtn:has-text('Cancel')";
@@ -247,10 +238,119 @@ public class RequesterAccessWizardTest extends BaseTest {
             assertTrue(dialog.waitForClosed(), "Unsaved Changes dialog remained visible after Stay on Page");
             reporter.pass("Stay on Page");
 
-            currentStep = "Still on Step 3";
+            currentStep = "Still Step 3";
             lastSelector = ".fioriCardHeaderTitle:has-text('Step 3: Access Configuration')";
             assertTrue(configPage.isStep3Active(), "Wizard did not remain on Step 3 Access Configuration");
-            reporter.pass("Still on Step 3");
+            reporter.pass("Still Step 3");
+
+            // STEP 4 REVISIT
+            reporter.section("STEP 4 REVISIT");
+
+            currentStep = "Access Validation";
+            lastSelector = "[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next')";
+            configPage.clickNextToValidation();
+            assertTrue(validationPage.isLoaded(), "Failed to navigate back to Step 4 Access Validation");
+            reporter.pass("Access Validation");
+
+            currentStep = "Next";
+            lastSelector = "[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Next')";
+            validationPage.advanceToStep5();
+            ReviewSummaryPage reviewPage = new ReviewSummaryPage(page);
+            assertTrue(reviewPage.isLoaded(), "Failed to navigate to Step 5 Review & Summary");
+            reporter.pass("Next");
+
+            // STEP 5
+            reporter.section("STEP 5");
+
+            currentStep = "Review & Summary";
+            lastSelector = ".fioriCardHeaderTitle:has-text('Step 5: Review & Summary')";
+            assertTrue(reviewPage.isLoaded(), "Step 5 Review & Summary not active");
+            reporter.pass("Review & Summary");
+
+            currentStep = "Summary Verification";
+            lastSelector = ".kyraSummaryTopDetailsCard";
+            assertTrue(reviewPage.isTopDetailsCardVisible(), "Summary top details card not visible");
+            assertEquals(employeeId, reviewPage.getRequesterId(), "Requester ID mismatch in summary");
+            assertEquals("Finance & Enterprise Performance", reviewPage.getBusinessSector(), "Business Sector mismatch in summary");
+            assertEquals("Corporate Accounting", reviewPage.getBusinessFunction(), "Business Function mismatch in summary");
+            assertEquals("30 Days (Temporary)", reviewPage.getAccessDuration(), "Access Duration mismatch in summary");
+            assertEquals("TEST", reviewPage.getJustification(), "Business Justification mismatch in summary");
+            assertTrue(reviewPage.getTargetSystemCardCount() >= 1, "No target system cards found in summary");
+            reporter.pass("Summary Verification");
+
+            currentStep = "Edit";
+            lastSelector = "button.kyraSummaryEditBtn:has-text('Edit')";
+            reviewPage.clickEditFirstTargetSystem();
+            assertTrue(configPage.isStep3Active(), "Failed to return to Step 3 for editing");
+            assertTrue(configPage.isOkButtonVisible(), "OK button not visible in edit mode");
+            reporter.pass("Edit");
+
+            currentStep = "Additional System";
+            lastSelector = "[id$='inPageTeamMultiSelect'], [id$='inPagePersonaMultiSelect']";
+            configPage.configureEditEntitlementsForNewRequestOnly();
+            reporter.pass("Additional System");
+
+            currentStep = "OK";
+            lastSelector = "[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('OK')";
+            configPage.clickOk();
+            assertTrue(reviewPage.isLoaded(), "Failed to return to Step 5 Review & Summary after clicking OK");
+            reporter.pass("OK");
+
+            currentStep = "Updated Summary";
+            lastSelector = ".kyraSummaryTable .kyraSummaryStatusText";
+            assertTrue(reviewPage.getTargetSystemCardCount() >= 1, "Updated Summary does not show system card");
+            assertTrue(reviewPage.allRowsHaveNewRequestStatus(), "Expected all configured items to have 'New Request' status");
+            assertFalse(reviewPage.hasAlreadyRequestedStatus(), "Found 'Already in Pending' items in updated summary");
+            reporter.pass("Updated Summary");
+
+            currentStep = "Submit Access Request";
+            lastSelector = "[id$='addAccessSectionContainer'] button.kyraPrimaryBtn:has-text('Submit Access Request')";
+            reviewPage.scrollToBottom();
+            reviewPage.clickSubmitAccessRequest();
+            SubmissionDialog submissionDialog = new SubmissionDialog(page);
+            assertTrue(submissionDialog.isDialogVisible(), "Access Request Submitted dialog failed to appear");
+            reporter.pass("Submit Access Request");
+
+            // SUBMISSION
+            reporter.section("SUBMISSION");
+
+            currentStep = "Access Request Submitted";
+            lastSelector = "#kyra_dialog_overlay h3";
+            assertEquals("Access Request Submitted", submissionDialog.getDialogTitle(), "Submission dialog title mismatch");
+            reporter.pass("Access Request Submitted");
+
+            currentStep = "Submitted Items";
+            lastSelector = "#kyra_dialog_overlay .kyra-dialog-scroll-container";
+            assertTrue(submissionDialog.hasSubmittedItems(), "No submitted items found in submission dialog");
+            reporter.pass("Submitted Items");
+
+            currentStep = "Done";
+            lastSelector = "#kyra_dialog_confirm_btn, button:has-text('Done')";
+            submissionDialog.clickDone();
+            assertTrue(submissionDialog.waitForClosed(), "Submission dialog remained open after clicking Done");
+            assertTrue(requesterPage.isLoaded(), "Failed to return to Requester Page after submission");
+            reporter.pass("Done");
+
+            // LOGOUT
+            reporter.section("LOGOUT");
+
+            currentStep = "Sign Out";
+            lastSelector = "button.kyraSignOutHeaderBtn, button:has-text('Sign Out')";
+            HeaderComponent headerComponent = new HeaderComponent(page);
+            headerComponent.clickSignOut();
+            LogoutDialog logoutDialog = new LogoutDialog(page);
+            assertTrue(logoutDialog.isDialogVisible(), "Sign Out confirmation dialog did not appear");
+            reporter.pass("Sign Out");
+
+            currentStep = "Yes, Sign Out";
+            lastSelector = "#kyra_signout_confirm_btn, button:has-text('Yes, Sign Out')";
+            logoutDialog.confirmSignOut();
+            reporter.pass("Yes, Sign Out");
+
+            currentStep = "Login Page Returned";
+            lastSelector = "#roleSelect-arrow, #signInBtn";
+            assertTrue(loginPage.isLoaded(), "Failed to return to Login Page after sign out");
+            reporter.pass("Login Page Returned");
 
             // Final test summary
             reporter.printSummary();
@@ -259,7 +359,7 @@ public class RequesterAccessWizardTest extends BaseTest {
             reporter.fail(currentStep);
             ScreenshotUtils.captureStepFailure(
                     page,
-                    "RequesterAccessWizard",
+                    "RequesterEndToEnd",
                     currentStep,
                     persona,
                     employeeId,

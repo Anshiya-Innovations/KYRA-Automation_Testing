@@ -73,7 +73,7 @@ public class ConfigReader {
     }
 
     public static String getRequesterId() {
-        return getProperty("persona.requester.id", "emp010");
+        return getProperty("persona.requester.id", "emp003");
     }
 
     public static String getApproverPersona() {
