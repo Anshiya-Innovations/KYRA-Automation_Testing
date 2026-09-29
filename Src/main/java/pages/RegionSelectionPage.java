@@ -78,6 +78,60 @@ public class RegionSelectionPage extends BasePage {
         }
     }
 
+    public void selectRegion(String regionName) {
+        WaitUtils.waitForElementVisible(mapContainer, ConfigReader.getDefaultTimeout());
+        WaitUtils.stabilize(page, 300);
+        try {
+            Locator pin = page.locator(".map-pin-container:has-text('" + regionName + "')").first();
+            if (pin.isVisible()) {
+                pin.scrollIntoViewIfNeeded();
+                pin.click();
+            } else {
+                page.evaluate("(name) => {\n" +
+                        "    const pins = document.querySelectorAll('.map-pin-container');\n" +
+                        "    for (const p of pins) {\n" +
+                        "        if (p.innerText && p.innerText.includes(name)) {\n" +
+                        "            p.click();\n" +
+                        "            break;\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}", regionName);
+            }
+        } catch (Exception e) {
+            page.evaluate("(name) => {\n" +
+                    "    const pins = document.querySelectorAll('.map-pin-container');\n" +
+                    "    for (const p of pins) {\n" +
+                    "        if (p.innerText && p.innerText.includes(name)) {\n" +
+                    "            p.click();\n" +
+                    "            break;\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}", regionName);
+        }
+        WaitUtils.stabilize(page, 400);
+    }
+
+    public boolean isRegionSelected(String regionName) {
+        try {
+            WaitUtils.stabilize(page, 200);
+            Locator chip = page.locator(".selected-chips-list button:has-text('" + regionName + "'), button.region-chip-btn:has-text('" + regionName + "')").first();
+            if (chip.isVisible()) return true;
+            Locator pin = page.locator(".map-pin-container.active:has-text('" + regionName + "')").first();
+            if (pin.isVisible()) return true;
+            Object res = page.evaluate("(name) => {\n" +
+                    "    try {\n" +
+                    "        const oView = window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
+                    "        if (!oView) return false;\n" +
+                    "        const c = oView.getController();\n" +
+                    "        return (c && c._aSelectedRegionIds && c._aSelectedRegionIds.some(id => id.toLowerCase().includes(name.toLowerCase())));\n" +
+                    "    } catch(e) { return false; }\n" +
+                    "}", regionName);
+            return Boolean.TRUE.equals(res);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public boolean hasSelectedRegions() {
         try {
             WaitUtils.stabilize(page, 300);

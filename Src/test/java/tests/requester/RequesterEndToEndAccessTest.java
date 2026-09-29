@@ -12,6 +12,8 @@ import utils.ConfigReader;
 import utils.ScreenshotUtils;
 import utils.StepReporter;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -82,15 +84,15 @@ public class RequesterEndToEndAccessTest extends BaseTest {
 
             currentStep = "Business Sector";
             lastSelector = "#application-app-preview-component---AccessPage--inPageBusinessSectorSelect";
-            addAccessPage.selectBusinessSector("Finance & Enterprise Performance");
-            assertEquals("Finance & Enterprise Performance", addAccessPage.getSelectedBusinessSector(),
+            addAccessPage.selectBusinessSector("Global Supply Chain & Logistics");
+            assertEquals("Global Supply Chain & Logistics", addAccessPage.getSelectedBusinessSector(),
                     "Business Sector selection mismatch");
             reporter.pass("Business Sector");
 
             currentStep = "Business Function";
             lastSelector = "#application-app-preview-component---AccessPage--inPageBusinessFunctionSelect";
-            addAccessPage.selectBusinessFunction("Corporate Accounting");
-            assertEquals("Corporate Accounting", addAccessPage.getSelectedBusinessFunction(),
+            addAccessPage.selectBusinessFunction("Supply Operations");
+            assertEquals("Supply Operations", addAccessPage.getSelectedBusinessFunction(),
                     "Business Function selection mismatch");
             reporter.pass("Business Function");
 
@@ -109,14 +111,15 @@ public class RequesterEndToEndAccessTest extends BaseTest {
             assertTrue(regionPage.isLoaded(), "Region Selection step elements not displayed");
             reporter.pass("Region Selection");
 
-            currentStep = "Select All Regions";
-            lastSelector = "#selectAllBtn, .select-all-btn-wrapper:has-text('Select All Regions')";
-            regionPage.selectAllRegions();
-            reporter.pass("Select All Regions");
+            currentStep = "Select Region";
+            lastSelector = ".map-pin-container:has-text('Africa')";
+            regionPage.selectRegion("Africa");
+            reporter.pass("Select Region");
 
             currentStep = "Selected Regions";
             lastSelector = "#selectedChipsList button.region-chip-btn";
             assertTrue(regionPage.hasSelectedRegions(), "Selected regions state did not update as expected");
+            assertTrue(regionPage.isRegionSelected("Africa"), "Region Africa was not selected");
             reporter.pass("Selected Regions");
 
             currentStep = "Next";
@@ -134,11 +137,13 @@ public class RequesterEndToEndAccessTest extends BaseTest {
             assertTrue(configPage.isStep3Active(), "Access Configuration Step 3 not active");
             reporter.pass("Access Configuration");
 
+            final String targetSystem = "Active Directory / IAM";
+
             currentStep = "Target System";
             lastSelector = "[id$='inPageSystemsMultiSelect']";
-            configPage.selectTargetSystem("SAP BTP Cloud Platform");
-            assertTrue(configPage.isTargetSystemSelected("SAP BTP Cloud Platform"),
-                    "Target System selection failed to reflect");
+            configPage.selectTargetSystem(targetSystem);
+            assertTrue(configPage.isTargetSystemSelected(targetSystem),
+                    "Target System " + targetSystem + " selection failed to reflect");
             reporter.pass("Target System");
 
             currentStep = "Service / Topic";
@@ -151,14 +156,14 @@ public class RequesterEndToEndAccessTest extends BaseTest {
             // In the UI, Team Role is selected before Assigned Persona to enable the persona dropdown
             currentStep = "Team Role";
             lastSelector = "[id$='inPageTeamMultiSelect']";
-            configPage.selectTeamRole("IT Developers (System Administrator)");
-            assertTrue(configPage.isTeamRoleSelected("IT Developers (System Administrator)"),
+            configPage.selectTeamRole("IT Administrators (System Administrator)");
+            assertTrue(configPage.isTeamRoleSelected("IT Administrators (System Administrator)"),
                     "Team Role selection failed to reflect");
 
             currentStep = "Assigned Persona";
             lastSelector = "[id$='inPagePersonaMultiSelect']";
-            configPage.selectAssignedPersona("Frontend & UI Developer Persona (IT Developers)");
-            assertTrue(configPage.isAssignedPersonaSelected("Frontend & UI Developer Persona (IT Developers)"),
+            configPage.selectAssignedPersona("Cloud Infrastructure Administrator Persona (IT Administrators)");
+            assertTrue(configPage.isAssignedPersonaSelected("Cloud Infrastructure Administrator Persona (IT Administrators)"),
                     "Assigned Persona selection failed to reflect");
 
             // Report in requested order: Assigned Persona then Team Role
@@ -271,11 +276,11 @@ public class RequesterEndToEndAccessTest extends BaseTest {
             lastSelector = ".kyraSummaryTopDetailsCard";
             assertTrue(reviewPage.isTopDetailsCardVisible(), "Summary top details card not visible");
             assertEquals(employeeId, reviewPage.getRequesterId(), "Requester ID mismatch in summary");
-            assertEquals("Finance & Enterprise Performance", reviewPage.getBusinessSector(), "Business Sector mismatch in summary");
-            assertEquals("Corporate Accounting", reviewPage.getBusinessFunction(), "Business Function mismatch in summary");
+            assertEquals("Global Supply Chain & Logistics", reviewPage.getBusinessSector(), "Business Sector mismatch in summary");
+            assertEquals("Supply Operations", reviewPage.getBusinessFunction(), "Business Function mismatch in summary");
             assertEquals("30 Days (Temporary)", reviewPage.getAccessDuration(), "Access Duration mismatch in summary");
             assertEquals("TEST", reviewPage.getJustification(), "Business Justification mismatch in summary");
-            assertTrue(reviewPage.getTargetSystemCardCount() >= 1, "No target system cards found in summary");
+            assertTrue(reviewPage.getTargetSystemCardCount() >= 1, "Expected at least 1 target system card in summary");
             reporter.pass("Summary Verification");
 
             currentStep = "Edit";

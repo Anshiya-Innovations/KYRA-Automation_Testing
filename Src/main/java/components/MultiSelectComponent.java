@@ -108,8 +108,41 @@ public class MultiSelectComponent {
         WaitUtils.stabilize(page, 150);
         option.click();
         WaitUtils.stabilize(page, 300);
-
         close();
+    }
+
+    public void selectOptions(List<String> optionTexts) {
+        if (optionTexts == null || optionTexts.isEmpty()) return;
+        try {
+            open();
+            for (String opt : optionTexts) {
+                Locator option = page.locator(".sapMPopover:visible li:has-text('" + opt + "'), " +
+                        ".sapMComboBoxBasePicker:visible li:has-text('" + opt + "'), " +
+                        ".sapMMultiComboBoxList:visible li:has-text('" + opt + "'), " +
+                        "li[role='checkbox']:has-text('" + opt + "'), " +
+                        "li:has-text('" + opt + "'):visible").first();
+                if (option.isVisible()) {
+                    option.scrollIntoViewIfNeeded();
+                    option.click();
+                    WaitUtils.stabilize(page, 150);
+                }
+            }
+            close();
+        } catch (Exception ignored) {
+        }
+        WaitUtils.stabilize(page, 200);
+    }
+
+    public int getSelectedCount() {
+        try {
+            Locator tokens = container.locator(".sapMTokenText, .sapMToken");
+            int count = tokens.count();
+            if (count > 0) return count;
+            Object res = container.evaluate("el => { const c = sap.ui.getCore().byId(el.id); return (c && c.getSelectedKeys) ? c.getSelectedKeys().length : 0; }");
+            if (res instanceof Number) return ((Number) res).intValue();
+        } catch (Exception ignored) {
+        }
+        return 0;
     }
 
     public boolean isOptionSelected(String optionText) {
