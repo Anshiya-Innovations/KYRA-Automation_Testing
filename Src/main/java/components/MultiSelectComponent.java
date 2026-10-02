@@ -133,6 +133,32 @@ public class MultiSelectComponent {
         WaitUtils.stabilize(page, 200);
     }
 
+    public void selectAllOptions() {
+        try {
+            open();
+            Locator popover = page.locator(".sapMPopover:visible, .sapMComboBoxBasePicker:visible, .sapMMultiComboBoxList:visible").first();
+            Locator items = popover.locator("li[role='checkbox'], li.sapMMultiComboBoxItem, li.sapMSelectListItemBase, li");
+            int count = items.count();
+            for (int i = 0; i < count; i++) {
+                Locator item = items.nth(i);
+                try {
+                    String ariaSelected = item.getAttribute("aria-selected");
+                    String className = item.getAttribute("class");
+                    boolean isSelected = "true".equalsIgnoreCase(ariaSelected) || (className != null && className.contains("sapMMultiComboBoxItemSelected"));
+                    if (!isSelected) {
+                        item.scrollIntoViewIfNeeded();
+                        item.click();
+                        WaitUtils.stabilize(page, 100);
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            close();
+        } catch (Exception ignored) {
+        }
+        WaitUtils.stabilize(page, 200);
+    }
+
     public int getSelectedCount() {
         try {
             Locator tokens = container.locator(".sapMTokenText, .sapMToken");

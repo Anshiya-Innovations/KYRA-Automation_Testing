@@ -32,12 +32,12 @@ public class ComplianceReviewPage extends BasePage {
         this.complianceCard = page.locator("#application-app-preview-component---AccessPage--approverSectionView, .kyraApproverCard").first();
         this.complianceTitle = page.locator(".fioriApproverTitle").first();
         this.complianceSubtitle = page.locator(".kyraSubtitleWithTealBar").first();
-        this.pendingQueueBtn = page.locator(".kyraApproverPillGroup button:has-text('Pending')").first();
-        this.historyLogBtn = page.locator(".kyraApproverPillGroup button:has-text('History')").first();
-        this.accessRequestsTab = page.locator(".kyraAccessRevokeBar button:has-text('Access')").first();
-        this.revokeRequestsTab = page.locator(".kyraAccessRevokeBar button:has-text('Revoke')").first();
+        this.pendingQueueBtn = page.locator(".kyraApproverPillGroup button:has-text('Pending'), button.kyraApproverPillBtn:has-text('Pending'), button[title*='Pending Queue']").first();
+        this.historyLogBtn = page.locator(".kyraApproverPillGroup button:has-text('History'), button.kyraApproverPillBtn:has-text('History'), button[title*='History']").first();
+        this.accessRequestsTab = page.locator(".kyraAccessRevokeBar button:has-text('Access'), button.kyraTabPillBtn:has-text('Access')").first();
+        this.revokeRequestsTab = page.locator(".kyraAccessRevokeBar button:has-text('Revoke'), button.kyraTabPillBtn:has-text('Revoke')").first();
         this.approvalAccessTable = page.locator("#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable, [id$='approvalAccessTable']").first();
-        this.searchField = page.locator("input[placeholder*='Search request ID'], .kyraEntitlementsSearchField").first();
+        this.searchField = page.locator("#application-app-preview-component---AccessPage--approverSectionView .kyraApproverRightControls input, .kyraApproverRightControls input, input[placeholder*='Search request ID, role, or user']").first();
         this.filterBtn = page.locator("button.kyraApproverFilterBtn, button:has-text('Filter')").first();
         this.exportBtn = page.locator("button.kyraApproverExportBtn, button:has-text('Export')").first();
     }
@@ -81,7 +81,7 @@ public class ComplianceReviewPage extends BasePage {
     public boolean isComplianceTitleDisplayed() {
         try {
             String title = getComplianceSectionTitle();
-            return "Compliance Review Requests".equalsIgnoreCase(title);
+            return "Compliance Review Requests".equalsIgnoreCase(title) || "Processed Approval History Log".equalsIgnoreCase(title);
         } catch (Exception e) {
             return false;
         }
@@ -100,8 +100,48 @@ public class ComplianceReviewPage extends BasePage {
         return historyLogBtn.isVisible();
     }
 
+    public void clickPendingQueue() {
+        try {
+            Locator emphasizedPending = page.locator(".kyraApproverPillGroup button.sapMBtnEmphasized:has-text('Pending')").first();
+            if (emphasizedPending.isVisible()) {
+                return;
+            }
+            WaitUtils.waitForElementVisible(pendingQueueBtn, ConfigReader.getDefaultTimeout());
+            pendingQueueBtn.scrollIntoViewIfNeeded();
+            pendingQueueBtn.click();
+            WaitUtils.stabilize(page, 1000);
+        } catch (Exception e) {
+            Locator fallback = page.locator(".kyraApproverPillGroup button:has-text('Pending'), button.kyraApproverPillBtn:has-text('Pending'), button:has-text('Pending')").first();
+            fallback.click();
+            WaitUtils.stabilize(page, 1000);
+        }
+    }
+
+    public void clickHistoryLog() {
+        try {
+            WaitUtils.waitForElementVisible(historyLogBtn, ConfigReader.getDefaultTimeout());
+            historyLogBtn.click();
+            WaitUtils.stabilize(page, 500);
+        } catch (Exception ignored) {
+        }
+    }
+
     public boolean isAccessRequestsTabVisible() {
         return accessRequestsTab.isVisible();
+    }
+
+    public void clickAccessRequestsTab() {
+        try {
+            Locator emphasizedAccess = page.locator(".kyraAccessRevokeBar button.sapMBtnEmphasized:has-text('Access')").first();
+            if (emphasizedAccess.isVisible()) {
+                return;
+            }
+            if (accessRequestsTab.isVisible()) {
+                accessRequestsTab.click();
+                WaitUtils.stabilize(page, 500);
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     public boolean isRevokeRequestsTabHidden() {
@@ -109,7 +149,15 @@ public class ComplianceReviewPage extends BasePage {
     }
 
     public boolean isApprovalAccessTableVisible() {
-        return approvalAccessTable.isVisible();
+        try {
+            if (!approvalAccessTable.isVisible() && pendingQueueBtn.isVisible()) {
+                clickPendingQueue();
+            }
+            WaitUtils.waitForElementVisible(approvalAccessTable, 5000);
+            return approvalAccessTable.isVisible();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean isFilterBtnVisible() {
@@ -118,6 +166,59 @@ public class ComplianceReviewPage extends BasePage {
 
     public boolean isExportBtnVisible() {
         return exportBtn.isVisible();
+    }
+
+    public boolean hasPendingRequestForUser(String userId) {
+        try {
+            clickPendingQueue();
+            clickAccessRequestsTab();
+            WaitUtils.waitForElementVisible(approvalAccessTable, ConfigReader.getDefaultTimeout());
+            Locator row = page.locator("#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable tbody tr:has(.kyraUserIdText:has-text('" + userId + "')), " +
+                    "#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable tbody tr:has-text('" + userId + "'), " +
+                    "tr.kyraApproverRowItem:has-text('" + userId + "'), " +
+                    "tr:has(.kyraUserIdText:has-text('" + userId + "'))").first();
+            return row.isVisible();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public ApproverRequestDetailPage openRequestForUserId(String userId) {
+        // 1. Ensure Pending Queue and Access Requests tab are active
+        clickPendingQueue();
+        clickAccessRequestsTab();
+
+        // 2. Ensure table container is in view
+        complianceCard.scrollIntoViewIfNeeded();
+        WaitUtils.waitForElementVisible(approvalAccessTable, ConfigReader.getDefaultTimeout());
+        WaitUtils.stabilize(page, 600);
+
+        // 3. Clear search field if it has any text to prevent filtering out rows
+        try {
+            if (searchField.isVisible()) {
+                String currentVal = searchField.inputValue();
+                if (currentVal != null && !currentVal.trim().isEmpty()) {
+                    searchField.clear();
+                    WaitUtils.stabilize(page, 300);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        // 4. Locate the row with the user ID in the approval table
+        Locator row = page.locator("#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable tbody tr:has(.kyraUserIdText:has-text('" + userId + "')), " +
+                "#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable tbody tr:has-text('" + userId + "'), " +
+                "tr.kyraApproverRowItem:has-text('" + userId + "'), " +
+                "tr:has(.kyraUserIdText:has-text('" + userId + "'))").first();
+
+        WaitUtils.waitForElementVisible(row, ConfigReader.getDefaultTimeout());
+        row.scrollIntoViewIfNeeded();
+        WaitUtils.stabilize(page, 200);
+        row.click();
+
+        ApproverRequestDetailPage detailPage = new ApproverRequestDetailPage(page);
+        WaitUtils.stabilize(page, 800);
+        return detailPage;
     }
 
     public void signOut() {

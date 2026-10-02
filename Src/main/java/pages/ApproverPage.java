@@ -115,6 +115,46 @@ public class ApproverPage extends BasePage {
         return exportBtn.isVisible();
     }
 
+    public boolean hasPendingRequestForUser(String userId) {
+        try {
+            WaitUtils.waitForElementVisible(approvalAccessTable, ConfigReader.getDefaultTimeout());
+            Locator row = page.locator("tr:has(.kyraUserIdText:has-text('" + userId + "')), tr.kyraApproverRowItem:has-text('" + userId + "')").first();
+            return row.isVisible();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public ApproverRequestDetailPage openRequestForUserId(String userId) {
+        WaitUtils.waitForElementVisible(approvalAccessTable, ConfigReader.getDefaultTimeout());
+        WaitUtils.stabilize(page, 500);
+
+        // Clear search field if it has any text to prevent filtering out rows
+        try {
+            if (searchField.isVisible()) {
+                String currentVal = searchField.inputValue();
+                if (currentVal != null && !currentVal.trim().isEmpty()) {
+                    searchField.clear();
+                    WaitUtils.stabilize(page, 300);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        Locator row = page.locator("#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable tbody tr:has(.kyraUserIdText:has-text('" + userId + "')), " +
+                "#application-app-preview-component---AccessPage--approverSectionView--approvalAccessTable tbody tr:has-text('" + userId + "'), " +
+                "tr.kyraApproverRowItem:has-text('" + userId + "'), " +
+                "tr:has(.kyraUserIdText:has-text('" + userId + "'))").first();
+        WaitUtils.waitForElementVisible(row, ConfigReader.getDefaultTimeout());
+        row.scrollIntoViewIfNeeded();
+        WaitUtils.stabilize(page, 200);
+        row.click();
+
+        ApproverRequestDetailPage detailPage = new ApproverRequestDetailPage(page);
+        WaitUtils.stabilize(page, 800);
+        return detailPage;
+    }
+
     public void signOut() {
         headerComponent.clickSignOut();
         if (logoutDialog.isDialogVisible()) {

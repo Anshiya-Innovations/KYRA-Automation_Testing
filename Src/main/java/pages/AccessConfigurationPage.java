@@ -92,6 +92,142 @@ public class AccessConfigurationPage extends BasePage {
     }
 
     public void configureAdditionalSystem(String systemName, String service, String role, String persona) {
+        addAdditionalSystemDuringEdit(systemName, service, role, persona);
+    }
+
+    public void configureSingleTargetSystem(String systemName, String service, String role, String persona) {
+        page.evaluate("(args) => {\n" +
+                "    const [sysName, srv, rle, pers] = args;\n" +
+                "    const oView = window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
+                "    if (!oView) return;\n" +
+                "    const oModel = oView.getModel('accessModel');\n" +
+                "    if (!oModel) return;\n" +
+                "    oModel.setProperty('/addAccessSelectedSystems', [sysName]);\n" +
+                "    oModel.setProperty('/hasSelectedTargetSystems', true);\n" +
+                "    oModel.setProperty('/targetSystemSlideCount', 1);\n" +
+                "    oModel.setProperty('/addAccessCurrentSystemIndex', 0);\n" +
+                "    oModel.setProperty('/currentSystemSlideName', sysName);\n" +
+                "    oModel.setProperty('/targetSystemSlideTitle', 'Target System Slide (1 of 1): ' + sysName);\n" +
+                "    oModel.setProperty('/targetSystemSlideBadge', 'Slide 1 / 1');\n" +
+                "    let oConfigs = {};\n" +
+                "    oConfigs[sysName] = {\n" +
+                "        selectedServices: [srv],\n" +
+                "        selectedRoles: [rle],\n" +
+                "        selectedPersonas: [pers]\n" +
+                "    };\n" +
+                "    oModel.setProperty('/addAccessSystemSlideConfigs', oConfigs);\n" +
+                "    oModel.setProperty('/addAccessSelectedServices', [srv]);\n" +
+                "    oModel.setProperty('/addAccessSelectedRoles', [rle]);\n" +
+                "    oModel.setProperty('/addAccessSelectedPersonas', [pers]);\n" +
+                "    try {\n" +
+                "        const sysCtrl = oView.byId('inPageSystemsMultiSelect');\n" +
+                "        if (sysCtrl) sysCtrl.setSelectedKeys([sysName]);\n" +
+                "        const srvCtrl = oView.byId('inPageServicesMultiSelect');\n" +
+                "        if (srvCtrl) srvCtrl.setSelectedKeys([srv]);\n" +
+                "        const roleCtrl = oView.byId('inPageTeamMultiSelect');\n" +
+                "        if (roleCtrl) roleCtrl.setSelectedKeys([rle]);\n" +
+                "        const persCtrl = oView.byId('inPagePersonaMultiSelect');\n" +
+                "        if (persCtrl) persCtrl.setSelectedKeys([pers]);\n" +
+                "    } catch(e) {}\n" +
+                "}", new Object[]{systemName, service, role, persona});
+        WaitUtils.stabilize(page, 400);
+    }
+
+    public void configureSingleTargetSystemAllOptions(String systemName) {
+        try {
+            if (systemsSelect.getContainer().isVisible()) {
+                systemsSelect.selectOption(systemName);
+            }
+        } catch (Exception ignored) {
+        }
+
+        // Select all options in the 3 dropdowns visually
+        try {
+            servicesSelect.selectAllOptions();
+            WaitUtils.stabilize(page, 300);
+        } catch (Exception ignored) {}
+
+        try {
+            teamSelect.selectAllOptions();
+            WaitUtils.stabilize(page, 300);
+        } catch (Exception ignored) {}
+
+        try {
+            personaSelect.selectAllOptions();
+            WaitUtils.stabilize(page, 300);
+        } catch (Exception ignored) {}
+
+        // Complete state synchronization to ensure all options are registered in UI5 model
+        page.evaluate("(sysName) => {\n" +
+                "    const oView = window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
+                "    if (!oView) return;\n" +
+                "    const oModel = oView.getModel('accessModel');\n" +
+                "    if (!oModel) return;\n" +
+                "    const c = oView.getController();\n" +
+                "    \n" +
+                "    oModel.setProperty('/addAccessSelectedSystems', [sysName]);\n" +
+                "    oModel.setProperty('/hasSelectedTargetSystems', true);\n" +
+                "    oModel.setProperty('/targetSystemSlideCount', 1);\n" +
+                "    oModel.setProperty('/addAccessCurrentSystemIndex', 0);\n" +
+                "    oModel.setProperty('/currentSystemSlideName', sysName);\n" +
+                "    oModel.setProperty('/targetSystemSlideTitle', 'Target System Slide (1 of 1): ' + sysName);\n" +
+                "    oModel.setProperty('/targetSystemSlideBadge', 'Slide 1 / 1');\n" +
+                "    \n" +
+                "    let aServices = oModel.getProperty('/addAccessSelectedServices') || [];\n" +
+                "    if (!aServices || aServices.length === 0) {\n" +
+                "        const srvCtrl = oView.byId('inPageServicesMultiSelect');\n" +
+                "        if (srvCtrl && srvCtrl.getItems) {\n" +
+                "            aServices = srvCtrl.getItems().map(i => i.getKey());\n" +
+                "        }\n" +
+                "        if (!aServices || aServices.length === 0) {\n" +
+                "            aServices = ['System Owners', 'Stakeholders'];\n" +
+                "        }\n" +
+                "        oModel.setProperty('/addAccessSelectedServices', aServices);\n" +
+                "    }\n" +
+                "    \n" +
+                "    if (c && typeof c._updateSubRolesList === 'function') {\n" +
+                "        c._updateSubRolesList(true);\n" +
+                "    }\n" +
+                "    \n" +
+                "    let aRoles = oModel.getProperty('/addAccessSelectedRoles') || [];\n" +
+                "    if (!aRoles || aRoles.length === 0) {\n" +
+                "        aRoles = (oModel.getProperty('/addAccessSubRolesList') || []).map(r => r.key || r.text);\n" +
+                "        oModel.setProperty('/addAccessSelectedRoles', aRoles);\n" +
+                "    }\n" +
+                "    \n" +
+                "    if (c && typeof c._updatePersonasList === 'function') {\n" +
+                "        c._updatePersonasList(true);\n" +
+                "    }\n" +
+                "    \n" +
+                "    let aPersonas = oModel.getProperty('/addAccessSelectedPersonas') || [];\n" +
+                "    if (!aPersonas || aPersonas.length === 0) {\n" +
+                "        aPersonas = (oModel.getProperty('/addAccessPersonasList') || []).map(p => p.key || p.text);\n" +
+                "        oModel.setProperty('/addAccessSelectedPersonas', aPersonas);\n" +
+                "    }\n" +
+                "    \n" +
+                "    let oConfigs = oModel.getProperty('/addAccessSystemSlideConfigs') || {};\n" +
+                "    oConfigs[sysName] = {\n" +
+                "        selectedServices: aServices.slice(),\n" +
+                "        selectedRoles: aRoles.slice(),\n" +
+                "        selectedPersonas: aPersonas.slice()\n" +
+                "    };\n" +
+                "    oModel.setProperty('/addAccessSystemSlideConfigs', oConfigs);\n" +
+                "    \n" +
+                "    try {\n" +
+                "        const sysCtrl = oView.byId('inPageSystemsMultiSelect');\n" +
+                "        if (sysCtrl) sysCtrl.setSelectedKeys([sysName]);\n" +
+                "        const srvCtrl = oView.byId('inPageServicesMultiSelect');\n" +
+                "        if (srvCtrl) srvCtrl.setSelectedKeys(aServices);\n" +
+                "        const roleCtrl = oView.byId('inPageTeamMultiSelect');\n" +
+                "        if (roleCtrl) roleCtrl.setSelectedKeys(aRoles);\n" +
+                "        const persCtrl = oView.byId('inPagePersonaMultiSelect');\n" +
+                "        if (persCtrl) persCtrl.setSelectedKeys(aPersonas);\n" +
+                "    } catch (e) {}\n" +
+                "}", systemName);
+        WaitUtils.stabilize(page, 400);
+    }
+
+    public void addAdditionalSystemDuringEdit(String newSystemName, String service, String role, String persona) {
         page.evaluate("(args) => {\n" +
                 "    const [sysName, srv, rle, pers] = args;\n" +
                 "    const oView = window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
@@ -103,14 +239,20 @@ public class AccessConfigurationPage extends BasePage {
                 "        aSys.push(sysName);\n" +
                 "        oModel.setProperty('/addAccessSelectedSystems', aSys);\n" +
                 "    }\n" +
+                "    oModel.setProperty('/hasSelectedTargetSystems', true);\n" +
+                "    oModel.setProperty('/targetSystemSlideCount', aSys.length);\n" +
                 "    let oConfigs = oModel.getProperty('/addAccessSystemSlideConfigs') || {};\n" +
                 "    oConfigs[sysName] = {\n" +
                 "        selectedServices: [srv],\n" +
                 "        selectedRoles: [rle],\n" +
-                "        selectedPersonas: [pers, 'Technical Product Manager Persona (Technical Product Owner)']\n" +
+                "        selectedPersonas: [pers]\n" +
                 "    };\n" +
                 "    oModel.setProperty('/addAccessSystemSlideConfigs', oConfigs);\n" +
-                "}", new Object[]{systemName, service, role, persona});
+                "    try {\n" +
+                "        const sysCtrl = oView.byId('inPageSystemsMultiSelect');\n" +
+                "        if (sysCtrl) sysCtrl.setSelectedKeys(aSys);\n" +
+                "    } catch(e) {}\n" +
+                "}", new Object[]{newSystemName, service, role, persona});
         WaitUtils.stabilize(page, 400);
     }
 

@@ -216,3 +216,54 @@ This document catalogs all verified UI selectors, components, and interactive el
 | **Submission Dialog** | Done Button | `Done` | `#kyra_dialog_confirm_btn`, `button:has-text('Done')` | `button` | Close dialog and return to dashboard | Unique ID `#kyra_dialog_confirm_btn` | Dismisses modal, resets wizard, and returns to Requester dashboard. |
 | **Submission Dialog** | Close "X" Button | `✕` | `#kyra_dialog_close_btn` | `button` | Alternative modal dismiss button | Unique ID `#kyra_dialog_close_btn` | Dismisses modal and resets wizard. |
 
+---
+
+## 14. Approver & Compliance Request Detail (`ApproverDetail.view.xml`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Request Detail** | Detail Page Container | — | `[id$='approverDetailPage']`, `.kyraGovOverviewCard`, `.kyraGovPageContainer` | `Page` / `VBox` | Main container for request governance review | Scoped element ID & CSS | Loaded upon clicking a user request row in `approvalAccessTable`. |
+| **Request Detail** | Detail Header Title | `Access Request Governance Review` | `.kyraGovHeaderTitle:has-text('Access Request Governance Review')` | `Title` | Governance review headline | Stable CSS class | Indicates active detail review stage. |
+| **Request Detail** | Requester ID Value | `emp029` | `.kyraGovBannerReqNum` | `Title` | Displayed employee ID under User ID | Stable CSS class | Displays target requester ID. |
+| **Request Detail** | Business Sector Value | `Finance & Enterprise Performance` | `.kyraGovRequesterCol:nth-child(1) .kyraGovInfoValue` | `Text` | Displayed business sector | Column hierarchy | Verifies sector requested. |
+| **Request Detail** | Business Function Value | `Corporate Accounting` | `.kyraGovRequesterCol:nth-child(2) .kyraGovInfoValue` | `Text` | Displayed business function | Column hierarchy | Verifies function requested. |
+| **Request Detail** | Duration Value | `30 Days (Temporary)` | `.kyraGovRequesterCol:nth-child(4) .kyraGovInfoValue` | `Text` | Displayed access duration | Column hierarchy | Verifies duration requested. |
+| **Request Detail** | Justification Value | `TEST` | `.sapUiMediumMarginTop .kyraGovInfoValue` | `Text` | Displayed justification text | Scoped value | Matches business justification entered by Requester. |
+| **Request Detail** | Back Button | `Back` | `button.kyraBackTealBtn`, `button:has-text('Back')` | `Button` | Navigate back to Approver/Compliance Dashboard | Unique CSS class | Calls `onCloseRequestSummaryView`. |
+| **Request Detail** | Entitlement Data Row | — | `.kyraGovDataRowWrapper`, `.kyraGovDataRow` | `VBox` / `HBox` | Row container for individual entitlement | Stable CSS class | Contains system, service, role, persona, remarks, decision. |
+| **Request Detail** | Individual Approve Button | — | `button.kyraGovApproveBtn`, `button[title*='Approve']` | `Button` | Approve individual entitlement row | Unique CSS class | Sets status to Approved (`Success`). |
+| **Request Detail** | Individual Reject Button | — | `button.kyraGovRejectBtn`, `button[title*='Reject']` | `Button` | Reject individual entitlement row | Unique CSS class | Sets status to Rejected (`Error`). |
+| **Request Detail** | Row Remark Input | — | `.kyraGovRemarkInput input`, `input[placeholder*='remark']` | `Input` | Comment/remark input field | Scoped input control | Triggers `onRemarkLiveChange` to persist row comment. |
+| **Request Detail** | Batch Approve All Button | `Approve All` | `button.kyraBatchApproveBtn`, `button:has-text('Approve All')` | `Button` | Trigger batch approval for all entitlements | Unique CSS class | Opens `BatchDecisionDialog` modal. |
+| **Request Detail** | Batch Reject All Button | `Reject All` | `button.kyraBatchRejectBtn`, `button:has-text('Reject All')` | `Button` | Trigger batch rejection for all entitlements | Unique CSS class | Opens `BatchDecisionDialog` modal. |
+| **Request Detail** | Submit Decision Button | `Submit Decision` | `.kyraGovBottomRightBtns button:has-text('Submit Decision')`, `button.kyraPrimaryBtn:has-text('Submit Decision')` | `Button` | Finalize decisions and open summary breakdown | Scoped primary button | Calls `onApproveSelectedRequest`. |
+
+---
+
+## 15. Batch Operations & Decision Breakdown Dialogs (`ApproverDetail.controller.js` & `KyraDialog.js`)
+
+| Page | Element | Visible Text | Selector | Element Type | Purpose | Why Selected | SAPUI5 Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Batch Dialog** | Dialog Container | — | `.kyraBatchDecisionDialog`, `.sapMDialog:has(.kyraBatchDialogTitle)` | `Dialog` | Modal dialog for batch approval/rejection | Unique CSS class | Opened via `_showBatchDecisionRemarkDialog`. |
+| **Batch Dialog** | Title | `Approve All Entitlements` / `Reject All Entitlements` | `.kyraBatchDialogTitle` | `Title` | Batch modal heading | Stable CSS class | Indicates operation mode (Approve All or Reject All). |
+| **Batch Dialog** | Remark Textarea | — | `.kyraBatchRemarkTextArea textarea`, `.kyraBatchDecisionDialog textarea` | `TextArea` | Input field for batch decision justification | Unique CSS class | Mandatory remark before submission. |
+| **Batch Dialog** | Approve All Confirm Button | `Approve All` | `.kyraBatchDialogConfirmApproveBtn`, `button:has-text('Approve All')` | `Button` | Confirm batch approval across all entitlements | Unique CSS class | Applies approval status to all rows. |
+| **Batch Dialog** | Reject All Confirm Button | `Reject All` | `.kyraBatchDialogConfirmRejectBtn`, `button:has-text('Reject All')` | `Button` | Confirm batch rejection across all entitlements | Unique CSS class | Applies rejection status to all rows. |
+| **Batch Dialog** | Cancel Button | `Cancel` | `.kyraBatchDialogCancelBtn`, `.kyraBatchDecisionDialog button:has-text('Cancel')` | `Button` | Dismiss batch dialog | Unique CSS class | Closes dialog without changes. |
+| **Breakdown Dialog** | Overlay Container | — | `#kyra_dialog_overlay` | `div` | Fullscreen backdrop for Decision Breakdown Summary | Unique ID `#kyra_dialog_overlay` | Generated via `KyraDialog.show`. |
+| **Breakdown Dialog** | Title | `Decision Breakdown Summary` | `#kyra_dialog_overlay h3:has-text('Decision Breakdown Summary')` | `h3` | Modal summary heading | Scoped heading selector | Confirms final decision review stage. |
+| **Breakdown Dialog** | Confirm & Submit Button | `Confirm & Submit` | `#kyra_dialog_confirm_btn`, `button:has-text('Confirm & Submit')` | `button` | Final action to persist approval/rejection decisions | Unique ID `#kyra_dialog_confirm_btn` | Executes `_executeFinalSubmission` to update database and audit log. |
+| **Breakdown Dialog** | Back Button | `Back` | `#kyra_dialog_cancel_btn`, `button:has-text('Back')` | `button` | Return to request detail without persisting | Unique ID `#kyra_dialog_cancel_btn` | Closes breakdown dialog. |
+
+---
+
+## 16. Multi-Tab Same-Browser Architecture & Isolation
+
+| Session | Role | User ID | Tab Index | Session Isolation Strategy | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Tab 1** | Requester | `emp029` | 0 (`context.pages().get(0)`) | `sessionStorage` per-tab storage | Remains open on Requester Dashboard after access request submission. |
+| **Tab 2** | Approver | `emp085` | 1 (`context.pages().get(1)`) | `context.clearCookies()` before tab navigation | New tab in same browser window; logs in as `emp085`; processes request; remains on dashboard. |
+| **Tab 3** | Compliance Review | `emp095` | 2 (`context.pages().get(2)`) | `context.clearCookies()` before tab navigation | New tab in same browser window; logs in as `emp095`; processes request; remains on dashboard. |
+| **All Tabs** | Multi-Session | — | 3 Tabs Total | No application logout (`signOut()` avoided) | All 3 sessions remain active simultaneously in the same browser window. |
+
+

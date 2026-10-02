@@ -181,4 +181,20 @@ public class ReviewSummaryPage extends BasePage {
         }
         return false;
     }
+
+    public boolean hasTargetSystem(String systemName) {
+        try {
+            WaitUtils.stabilize(page, 300);
+            List<String> titles = getTargetSystemCardTitles();
+            for (String title : titles) {
+                if (title.toLowerCase().contains(systemName.toLowerCase())) {
+                    return true;
+                }
+            }
+            Locator card = page.locator(".kyraSummaryCardContainer:has-text('" + systemName + "'), .kyraSummaryCardTitle:has-text('" + systemName + "')").first();
+            return card.isVisible();
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
