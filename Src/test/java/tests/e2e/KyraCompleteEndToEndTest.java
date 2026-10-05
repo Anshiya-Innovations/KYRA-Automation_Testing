@@ -15,6 +15,8 @@ import utils.ScreenshotUtils;
 import utils.StepReporter;
 import utils.WaitUtils;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -151,11 +153,17 @@ public class KyraCompleteEndToEndTest extends BaseTest {
             assertTrue(configPage.isStep3Active(), "Access Configuration Step 3 not active");
             requesterReporter.pass("Access Configuration");
 
-            final String targetSystem = "KYRA Central Governance";
+            final String targetSystem = "SAP S/4HANA Enterprise";
+            final String serviceTopic = "System";
+            final String teamRole = "IT Developers";
+            final List<String> assignedPersonas = List.of(
+                    "Frontend & UI Developer (IT Developers)",
+                    "Backend & Systems Developer (IT Developers)"
+            );
 
-            currentStep = "Target System & All 3 Dropdowns Selected";
+            currentStep = "Target System & Entitlements Configuration";
             lastSelector = "[id$='inPageSystemsMultiSelect'], [id$='inPageServicesMultiSelect']";
-            configPage.configureSingleTargetSystemAllOptions(targetSystem);
+            configPage.configureTargetSystemWithSpecificEntitlements(targetSystem, serviceTopic, teamRole, assignedPersonas);
             assertTrue(configPage.isTargetSystemSelected(targetSystem),
                     "Target System " + targetSystem + " selection failed to reflect");
             requesterReporter.pass("Target System (" + targetSystem + ")");
@@ -163,17 +171,17 @@ public class KyraCompleteEndToEndTest extends BaseTest {
             currentStep = "Service / Topic Dropdown";
             lastSelector = "[id$='inPageServicesMultiSelect']";
             assertTrue(configPage.getSelectedServicesCount() > 0, "No services selected in Service / Topic dropdown");
-            requesterReporter.pass("Service / Topic (All Options Selected)");
+            requesterReporter.pass("Service / Topic (" + serviceTopic + " Selected)");
 
             currentStep = "Team Role Dropdown";
             lastSelector = "[id$='inPageTeamMultiSelect']";
             assertTrue(configPage.getSelectedRolesCount() > 0, "No roles selected in Team Role dropdown");
-            requesterReporter.pass("Team Role (All Options Selected)");
+            requesterReporter.pass("Team Role (" + teamRole + " Selected)");
 
             currentStep = "Assigned Persona Dropdown";
             lastSelector = "[id$='inPagePersonaMultiSelect']";
-            assertTrue(configPage.getSelectedPersonasCount() > 0, "No personas selected in Assigned Persona dropdown");
-            requesterReporter.pass("Assigned Persona (All Options Selected)");
+            assertTrue(configPage.getSelectedPersonasCount() >= 2, "Less than 2 personas selected in Assigned Persona dropdown");
+            requesterReporter.pass("Assigned Persona (Frontend & Backend Selected)");
 
             currentStep = "Advance to Duration & Justification";
             lastSelector = "[id$='addAccessSectionContainer'] button:has-text('Next')";
@@ -187,7 +195,7 @@ public class KyraCompleteEndToEndTest extends BaseTest {
                     "Access Duration selection mismatch");
             requesterReporter.pass("Access Duration (" + duration + ")");
 
-            final String justification = "End to end access request for IT & Security Central Governance";
+            final String justification = "End to end access request for IT & Security SAP S/4HANA Enterprise";
             currentStep = "Business Justification";
             lastSelector = "[id$='inPageJustificationArea'] textarea";
             configPage.enterJustification(justification);

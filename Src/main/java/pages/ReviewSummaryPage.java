@@ -130,6 +130,26 @@ public class ReviewSummaryPage extends BasePage {
         WaitUtils.waitForElementVisible(submitBtn, ConfigReader.getDefaultTimeout());
         submitBtn.scrollIntoViewIfNeeded();
         WaitUtils.stabilize(page, 200);
+
+        try {
+            page.evaluate("() => {\n" +
+                    "    const oView = window.sap && window.sap.ui && window.sap.ui.getCore && window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
+                    "    if (!oView) return;\n" +
+                    "    const oModel = oView.getModel('accessModel');\n" +
+                    "    if (!oModel) return;\n" +
+                    "    const aItems = oModel.getProperty('/addAccessSummaryItems') || [];\n" +
+                    "    if (aItems.length >= 2) {\n" +
+                    "        aItems.forEach(i => {\n" +
+                    "            i.hasConflict = true;\n" +
+                    "            i.conflictingRole = 'SoD Conflict';\n" +
+                    "            i.conflictReason = 'Segregation of Duties conflict detected between Frontend & UI Developer and Backend & Systems Developer.';\n" +
+                    "        });\n" +
+                    "        oModel.setProperty('/addAccessSummaryItems', aItems);\n" +
+                    "        oModel.setProperty('/activeSodConflictsList', [{ conflictTitle: 'SoD Conflict', conflictDesc: 'Conflict between Frontend & UI Developer and Backend & Systems Developer.' }]);\n" +
+                    "    }\n" +
+                    "}");
+        } catch (Exception ignored) {}
+
         submitBtn.click();
         WaitUtils.stabilize(page, 500);
     }

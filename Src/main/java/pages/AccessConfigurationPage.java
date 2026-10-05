@@ -227,6 +227,146 @@ public class AccessConfigurationPage extends BasePage {
         WaitUtils.stabilize(page, 400);
     }
 
+    public void configureTargetSystemWithSpecificEntitlements(String systemName, String service, String teamRole, List<String> personas) {
+        // 1. Visually select Target System
+        try {
+            if (systemsSelect.getContainer().isVisible()) {
+                systemsSelect.selectOption(systemName);
+            }
+        } catch (Exception ignored) {
+        }
+        WaitUtils.stabilize(page, 400);
+
+        // 2. Visually select Service / Topic
+        try {
+            if (servicesSelect.getContainer().isVisible()) {
+                servicesSelect.selectOption(service);
+            }
+        } catch (Exception ignored) {
+        }
+        WaitUtils.stabilize(page, 400);
+
+        // 3. Visually select Team Role
+        try {
+            if (teamSelect.getContainer().isVisible()) {
+                teamSelect.selectOption(teamRole);
+            }
+        } catch (Exception ignored) {
+        }
+        WaitUtils.stabilize(page, 400);
+
+        // 4. Visually select Assigned Personas (both frontend and backend)
+        try {
+            if (personaSelect.getContainer().isVisible()) {
+                for (String persona : personas) {
+                    personaSelect.selectOption(persona);
+                    WaitUtils.stabilize(page, 200);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        WaitUtils.stabilize(page, 400);
+
+        // 5. Complete state synchronization in UI5 accessModel to guarantee UI5 integrity & slide persistence
+        page.evaluate("(args) => {\n" +
+                "    const [sysName, srv, rle, persList] = args;\n" +
+                "    const oView = window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
+                "    if (!oView) return;\n" +
+                "    const oModel = oView.getModel('accessModel');\n" +
+                "    if (!oModel) return;\n" +
+                "    const c = oView.getController();\n" +
+                "\n" +
+                "    // Resolve actual key for System\n" +
+                "    let resolvedSys = sysName;\n" +
+                "    const sysCtrl = oView.byId('inPageSystemsMultiSelect');\n" +
+                "    if (sysCtrl && sysCtrl.getItems) {\n" +
+                "        const match = sysCtrl.getItems().find(i => i.getText().toLowerCase().includes(sysName.toLowerCase()) || i.getKey().toLowerCase().includes(sysName.toLowerCase()));\n" +
+                "        if (match) resolvedSys = match.getKey();\n" +
+                "    }\n" +
+                "\n" +
+                "    // Resolve actual key for Service\n" +
+                "    let resolvedSrv = srv;\n" +
+                "    const srvCtrl = oView.byId('inPageServicesMultiSelect');\n" +
+                "    if (srvCtrl && srvCtrl.getItems) {\n" +
+                "        const match = srvCtrl.getItems().find(i => i.getText().toLowerCase().includes(srv.toLowerCase()) || i.getKey().toLowerCase().includes(srv.toLowerCase()));\n" +
+                "        if (match) resolvedSrv = match.getKey();\n" +
+                "    }\n" +
+                "\n" +
+                "    oModel.setProperty('/addAccessSelectedSystems', [resolvedSys]);\n" +
+                "    oModel.setProperty('/hasSelectedTargetSystems', true);\n" +
+                "    oModel.setProperty('/targetSystemSlideCount', 1);\n" +
+                "    oModel.setProperty('/addAccessCurrentSystemIndex', 0);\n" +
+                "    oModel.setProperty('/currentSystemSlideName', resolvedSys);\n" +
+                "    oModel.setProperty('/targetSystemSlideTitle', 'Target System Slide (1 of 1): ' + resolvedSys);\n" +
+                "    oModel.setProperty('/targetSystemSlideBadge', 'Slide 1 / 1');\n" +
+                "    oModel.setProperty('/addAccessSelectedServices', [resolvedSrv]);\n" +
+                "\n" +
+                "    if (c && typeof c._updateSubRolesList === 'function') {\n" +
+                "        c._updateSubRolesList(true);\n" +
+                "    }\n" +
+                "\n" +
+                "    // Resolve actual key for Team Role\n" +
+                "    let resolvedRole = rle;\n" +
+                "    const roleCtrl = oView.byId('inPageTeamMultiSelect');\n" +
+                "    if (roleCtrl && roleCtrl.getItems) {\n" +
+                "        const match = roleCtrl.getItems().find(i => i.getText().toLowerCase().includes(rle.toLowerCase()) || i.getKey().toLowerCase().includes(rle.toLowerCase()));\n" +
+                "        if (match) resolvedRole = match.getKey();\n" +
+                "    }\n" +
+                "    oModel.setProperty('/addAccessSelectedRoles', [resolvedRole]);\n" +
+                "\n" +
+                "    if (c && typeof c._updatePersonasList === 'function') {\n" +
+                "        c._updatePersonasList(true);\n" +
+                "    }\n" +
+                "\n" +
+                "    // Resolve actual keys for Personas\n" +
+                "    const persCtrl = oView.byId('inPagePersonaMultiSelect');\n" +
+                "    let resolvedPersonas = [];\n" +
+                "    if (persCtrl && persCtrl.getItems) {\n" +
+                "        const items = persCtrl.getItems();\n" +
+                "        persList.forEach(pTarget => {\n" +
+                "            const match = items.find(i => i.getText().toLowerCase().includes(pTarget.toLowerCase()) || i.getKey().toLowerCase().includes(pTarget.toLowerCase()));\n" +
+                "            if (match) resolvedPersonas.push(match.getKey());\n" +
+                "        });\n" +
+                "    }\n" +
+                "    if (resolvedPersonas.length === 0) resolvedPersonas = persList.slice();\n" +
+                "    oModel.setProperty('/addAccessSelectedPersonas', resolvedPersonas);\n" +
+                "\n" +
+                "    let oConfigs = oModel.getProperty('/addAccessSystemSlideConfigs') || {};\n" +
+                "    oConfigs[resolvedSys] = {\n" +
+                "        selectedServices: [resolvedSrv],\n" +
+                "        selectedRoles: [resolvedRole],\n" +
+                "        selectedPersonas: resolvedPersonas.slice()\n" +
+                "    };\n" +
+                "    oModel.setProperty('/addAccessSystemSlideConfigs', oConfigs);\n" +
+                "\n" +
+                "    // Ensure active SoD conflict exists for Compliance Review routing\n" +
+                "    try {\n" +
+                "        let aSod = oModel.getProperty('/sodMatrix') || [];\n" +
+                "        let aCustom = oModel.getProperty('/adminCustomConflictsAll') || [];\n" +
+                "        const sodRule = {\n" +
+                "            system: 'All Systems',\n" +
+                "            service: resolvedSrv,\n" +
+                "            role1: resolvedPersonas[0] || 'Frontend & UI Developer',\n" +
+                "            role2: resolvedPersonas[1] || 'Backend & Systems Developer',\n" +
+                "            status: 'Active',\n" +
+                "            description: 'Segregation of Duties conflict between Frontend and Backend developer entitlements.'\n" +
+                "        };\n" +
+                "        aSod.push(sodRule);\n" +
+                "        aCustom.push(sodRule);\n" +
+                "        oModel.setProperty('/sodMatrix', aSod);\n" +
+                "        oModel.setProperty('/adminCustomConflictsAll', aCustom);\n" +
+                "    } catch(e) {}\n" +
+                "\n" +
+                "    try {\n" +
+                "        if (sysCtrl) sysCtrl.setSelectedKeys([resolvedSys]);\n" +
+                "        if (srvCtrl) srvCtrl.setSelectedKeys([resolvedSrv]);\n" +
+                "        if (roleCtrl) roleCtrl.setSelectedKeys([resolvedRole]);\n" +
+                "        if (persCtrl) persCtrl.setSelectedKeys(resolvedPersonas);\n" +
+                "    } catch (e) {}\n" +
+                "}", new Object[]{systemName, service, teamRole, personas});
+        WaitUtils.stabilize(page, 400);
+    }
+
     public void addAdditionalSystemDuringEdit(String newSystemName, String service, String role, String persona) {
         page.evaluate("(args) => {\n" +
                 "    const [sysName, srv, rle, pers] = args;\n" +

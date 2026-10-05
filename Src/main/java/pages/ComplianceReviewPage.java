@@ -211,7 +211,24 @@ public class ComplianceReviewPage extends BasePage {
                 "tr.kyraApproverRowItem:has-text('" + userId + "'), " +
                 "tr:has(.kyraUserIdText:has-text('" + userId + "'))").first();
 
-        WaitUtils.waitForElementVisible(row, ConfigReader.getDefaultTimeout());
+        try {
+            WaitUtils.waitForElementVisible(row, 6000);
+        } catch (Exception notImmediatelyVisible) {
+            // Re-fetch submitted requests if table sync took a second after Approver submitted in Tab 2
+            try {
+                page.evaluate("() => {\n" +
+                        "    const oView = window.sap && window.sap.ui && window.sap.ui.getCore && window.sap.ui.getCore().byId('application-app-preview-component---AccessPage');\n" +
+                        "    if (oView && oView.getController() && typeof oView.getController()._loadSubmittedRequests === 'function') {\n" +
+                        "        oView.getController()._loadSubmittedRequests(oView.getModel('accessModel'), false, true);\n" +
+                        "    }\n" +
+                        "}");
+                WaitUtils.stabilize(page, 1000);
+                clickPendingQueue();
+                clickAccessRequestsTab();
+            } catch (Exception ignored) {}
+            WaitUtils.waitForElementVisible(row, ConfigReader.getNavigationTimeout());
+        }
+
         row.scrollIntoViewIfNeeded();
         WaitUtils.stabilize(page, 200);
         row.click();
